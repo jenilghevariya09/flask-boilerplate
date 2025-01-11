@@ -17,7 +17,6 @@ class User:
     def find_by_username(cursor, username):
         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         user = cursor.fetchone()
-        print('user---',user)
         return User(user[0], user[1], user[2], user[3], user[4]) if user else None
 
     @staticmethod

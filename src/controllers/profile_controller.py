@@ -10,11 +10,11 @@ def get_user_profile(cursor, username):
     try:
         user = User.find_by_username(cursor, username)
         if user:
-            return jsonify({
+            return {
                 "username": user.username,
                 "full_name": user.full_name,
                 "email": user.email
-            }), 200
+            }, 200
         return jsonify({"message": "User not found"}), 404
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500

@@ -14,10 +14,10 @@ class Settings:
                 predefined_sl, sl_type, is_trailing, predefined_target, 
                 target_type, predefined_mtm_sl, mtm_sl_type, 
                 predefined_mtm_target, mtm_target_type, lot_multiplier, userId
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
-        # Handle missing data by replacing missing keys with None
+        # Handle missing data by replacing missing keys with default or None
         values = (
             data.get('theme_mode', 'dark'),
             data.get('symbol', None),
@@ -25,14 +25,14 @@ class Settings:
             data.get('close_order_type', 'Market'),
             data.get('predefined_sl', None),
             data.get('sl_type', 'Points'),
-            data.get('is_trailing', 0),
+            int(data.get('is_trailing', 0)),
             data.get('predefined_target', None),
             data.get('target_type', 'Points'),
             data.get('predefined_mtm_sl', None),
             data.get('mtm_sl_type', 'Points'),
             data.get('predefined_mtm_target', None),
             data.get('mtm_target_type', 'Points'),
-            data.get('lot_multiplier', 1),
+            int(data.get('lot_multiplier', 1)),
             data.get('userId')
         )
 

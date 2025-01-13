@@ -23,7 +23,6 @@ def get_user_profile(cursor, username):
 
 def update_user_profile(cursor, user_id, full_name, email):
     try:
-        print(cursor, user_id, full_name, email)
         User.update_profile(cursor, user_id, full_name, email)
         return jsonify({"message": "Profile updated successfully"}), 200
     except SQLAlchemyError as e:

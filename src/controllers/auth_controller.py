@@ -46,7 +46,6 @@ def login_user(cursor, username, password):
                 formatted_setting = format_single_query_result(setting, column_names)
             xts_auth = XtsAuth.get_xts_auth_by_user(cursor, user.id)
             if xts_auth:
-                print('xts_auth',xts_auth)
                 column_names = [
                     "id", "MarketId", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "userId"
                 ]

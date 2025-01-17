@@ -28,9 +28,6 @@ class User:
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
 
-        if not fields:
-            raise ValueError("No fields provided to update.")
-        # Handle missing data by replacing missing keys with default or None
         values = (
             data.get('first_name', None),
             data.get('last_name', None),

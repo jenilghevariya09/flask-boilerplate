@@ -6,13 +6,14 @@ from utils.httpUtils import HTTP
 
 http = HTTP()
 
-def get_user_profile(cursor, username):
+def get_user_profile(cursor, email):
     try:
-        user = User.find_by_username(cursor, username)
+        user = User.find_by_email(cursor, email)
         if user:
             return {
-                "username": user.username,
-                "full_name": user.full_name,
+                "phone_number": user.phone_number,
+                "first_name ": user.first_name,
+                "last_name ": user.last_name,
                 "email": user.email
             }, 200
         return jsonify({"message": "User not found"}), 404
@@ -21,9 +22,9 @@ def get_user_profile(cursor, username):
     except Exception as e:
         return jsonify({"message": "An error occurred while retrieving the profile", "error": str(e)}), 500
 
-def update_user_profile(cursor, user_id, full_name, email):
+def update_user_profile(cursor, user_id, data):
     try:
-        User.update_profile(cursor, user_id, full_name, email)
+        User.update_profile(cursor, user_id, data)
         return jsonify({"message": "Profile updated successfully"}), 200
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
@@ -34,7 +35,7 @@ def get_all_users(cursor, page_no, page_limit):
     try:
         result = User.get_all_users(cursor)
         if result:
-            column_names = ["id", "username", "email", "full_name"]
+            column_names = ["id", "first_name", "last_name", "email", "phone_number" ]
             formatted_result = format_query_result(result, column_names)
             return http.response({"data":formatted_result},200, 'Operation Executed Successfully')
         return http.response({}, 404, 'No users found')
@@ -45,7 +46,7 @@ def get_user_by_id(cursor, user_id):
     try:
         result = User.get_user_by_id(cursor, user_id)
         if result:
-            column_names = ["id", "username", "email", "full_name"]
+            column_names = ["id", "first_name", "last_name", "email", "phone_number" ]
             formatted_result = format_single_query_result(result, column_names)
             return http.response({"data":formatted_result}, 200, 'Operation Executed Successfully')
         return http.response({}, 404, 'User not found')

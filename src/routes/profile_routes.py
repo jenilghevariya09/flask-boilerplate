@@ -10,9 +10,9 @@ profile_routes = Blueprint('profile_routes', __name__)
 @jwt_required()
 def get_profile():
     try:
-        username = get_jwt_identity()
+        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        response = get_user_profile(cursor, username)
+        response = get_user_profile(cursor, email)
         cursor.close()
         return response
     except Exception as e:
@@ -23,20 +23,13 @@ def get_profile():
 @jwt_required()
 def update_profile():
     try:
-        username = get_jwt_identity()
-        data = request.get_json()
-        
-        if not data.get('full_name') or not data.get('email'):
-            return jsonify({'message': 'Full name and email are required'}), 400
-        
-        full_name = data.get('full_name')
-        email = data.get('email')
-        
+        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        user = User.find_by_username(cursor, username)
+        data = request.get_json()
+        user = User.find_by_email(cursor, email)
         
         if user:
-            response = update_user_profile(cursor, user.id, full_name, email)
+            response = update_user_profile(cursor, user.id, data)
             mysql.connection.commit()
             cursor.close()
             return response

@@ -9,18 +9,11 @@ auth_routes = Blueprint('auth_routes', __name__)
 @auth_routes.route('/register', methods=['POST'])
 def register():
     try:
-        data = request.get_json()
-        if not data.get('username') or not data.get('password'):
-            return jsonify({'message': 'Username and password are required'}), 400
-        
-        username = data.get('username')
-        password = data.get('password')
-        
         cursor = mysql.connection.cursor()
-        response = register_user(cursor, username, password)
+        data = request.json
+        response = register_user(cursor, data)
         mysql.connection.commit()
         cursor.close()
-
         return response
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
@@ -30,14 +23,13 @@ def register():
 def login():
     try:
         data = request.get_json()
-        if not data.get('username') or not data.get('password'):
-            return jsonify({'message': 'Username and password are required'}), 400
+        if not data.get('email') or not data.get('password'):
+            return jsonify({'message': 'email and password are required'}), 400
         
-        username = data.get('username')
+        email = data.get('email')
         password = data.get('password')
-        
         cursor = mysql.connection.cursor()
-        response = login_user(cursor, username, password)
+        response = login_user(cursor, email, password)
         cursor.close()
 
         return response

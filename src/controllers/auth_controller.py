@@ -12,25 +12,28 @@ http = HTTP()
 
 bcrypt = Bcrypt()
 
-def register_user(cursor, username, password):
+def register_user(cursor, data):
     try:
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        cursor.execute("INSERT INTO users (username, password) VALUES (%s, %s)", (username, hashed_password))
-        return jsonify({"message": "User registered successfully"}), 201
+        hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
+        data['password'] = hashed_password
+        User.register_user(cursor, data)
+        return jsonify({"message": "User registered successfully"}), 200
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
     except Exception as e:
         return jsonify({"message": "An error occurred while registering the user", "error": str(e)}), 500
 
-def login_user(cursor, username, password):
+def login_user(cursor, email, password):
     try:
-        user = User.find_by_username(cursor, username)
+        print(email)
+        user = User.find_by_email(cursor, email)
         if user and bcrypt.check_password_hash(user.password, password):
-            access_token = create_jwt_token(identity=user.username)
+            access_token = create_jwt_token(identity=user.email)
             user_data = {
                 "id": user.id,
-                "username": user.username,
-                "full_name": user.full_name,
+                "phone_number": user.phone_number,
+                "first_name ": user.first_name,
+                "last_name ": user.last_name,
                 "email": user.email
             }
             formatted_setting = None;

@@ -8,7 +8,7 @@ broker_credentials_routes = Blueprint('broker_credentials_routes', __name__)
 # Create BrokerCredentials
 @broker_credentials_routes.route('/create', methods=['POST'])
 @jwt_required()
-def create_xts():
+def create_broker():
     try:
         data = request.get_json()
         if not data:
@@ -22,28 +22,28 @@ def create_xts():
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 
 # Get BrokerCredentials by ID
-@broker_credentials_routes.route('/<int:xts_id>', methods=['GET'])
+@broker_credentials_routes.route('/<int:broker_id>', methods=['GET'])
 @jwt_required()
-def get_xts(xts_id):
+def get_broker(broker_id):
     try:
         cursor = mysql.connection.cursor()
-        response = get_broker_credentials(cursor, xts_id)
+        response = get_broker_credentials(cursor, broker_id)
         cursor.close()
         return response
     except Exception as e:
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
 # Update BrokerCredentials by ID
-@broker_credentials_routes.route('/<int:xts_id>', methods=['PUT'])
+@broker_credentials_routes.route('/<int:broker_id>', methods=['PUT'])
 @jwt_required()
-def update_xts(xts_id):
+def update_broker(broker_id):
     try:
         data = request.get_json()
         if not data:
             return jsonify({"message": "Invalid input"}), 400
 
         cursor = mysql.connection.cursor()
-        response = update_broker_credentials(cursor, xts_id, data)
+        response = update_broker_credentials(cursor, broker_id, data)
         mysql.connection.commit()
         cursor.close()
         return response
@@ -51,12 +51,12 @@ def update_xts(xts_id):
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 
 # Delete BrokerCredentials by ID
-@broker_credentials_routes.route('/<int:xts_id>', methods=['DELETE'])
+@broker_credentials_routes.route('/<int:broker_id>', methods=['DELETE'])
 @jwt_required()
-def delete_xts(xts_id):
+def delete_broker(broker_id):
     try:
         cursor = mysql.connection.cursor()
-        response = delete_broker_credentials(cursor, xts_id)
+        response = delete_broker_credentials(cursor, broker_id)
         mysql.connection.commit()
         cursor.close()
         return response
@@ -66,7 +66,7 @@ def delete_xts(xts_id):
 # Get BrokerCredentials data by userId
 @broker_credentials_routes.route('/user/<int:user_id>', methods=['GET'])
 @jwt_required()
-def get_xts_by_user(user_id):
+def get_broker_by_user(user_id):
     try:
         cursor = mysql.connection.cursor()
         response = get_broker_credentials_by_user(cursor, user_id)

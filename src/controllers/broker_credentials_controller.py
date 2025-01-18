@@ -42,7 +42,7 @@ def get_broker_credentials_by_user(cursor, user_id):
     try:
         result = BrokerCredentials.get_broker_credentials_by_user(cursor, user_id)
         if result:
-            column_names = ["id", "MarketId", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "userId"]
+            column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"]
             formatted_result = format_query_result(result, column_names)
             return http.response({"data":formatted_result},200, 'Operation Executed Successfully')
         return jsonify({"message": "No BrokerCredentials data found for this user"}), 404

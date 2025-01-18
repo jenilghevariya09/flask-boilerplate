@@ -6,11 +6,11 @@ class BrokerCredentials:
     @staticmethod
     def create_broker_credentials(cursor, data):
         query = """
-            INSERT INTO brokercredentials (MarketId, MarketApiKey, MarketSecretKey, InteractiveApiKey, InteractiveSecretKey, userId)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO brokercredentials (brokerServer, MarketApiKey, MarketSecretKey, InteractiveApiKey, InteractiveSecretKey, MarketUrl, InteractiveUrl, userId)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
-        cursor.execute(query, (data['MarketId'], data['MarketApiKey'], data['MarketSecretKey'],
-                               data['InteractiveApiKey'], data['InteractiveSecretKey'], data['userId']))
+        cursor.execute(query, (data['brokerServer'], data['MarketApiKey'], data['MarketSecretKey'],
+                               data['InteractiveApiKey'], data['InteractiveSecretKey'], data['MarketUrl'], data['InteractiveUrl'], data['userId']))
 
     @staticmethod
     def get_broker_credentials(cursor, xts_id):
@@ -22,12 +22,12 @@ class BrokerCredentials:
     def update_broker_credentials(cursor, xts_id, data):
         query = """
             UPDATE brokercredentials
-            SET MarketId = %s, MarketApiKey = %s, MarketSecretKey = %s,
-                InteractiveApiKey = %s, InteractiveSecretKey = %s
+            SET brokerServer = %s, MarketApiKey = %s, MarketSecretKey = %s,
+                InteractiveApiKey = %s, InteractiveSecretKey = %s, MarketUrl = %s, InteractiveUrl = %s
             WHERE id = %s
         """
-        cursor.execute(query, (data['MarketId'], data['MarketApiKey'], data['MarketSecretKey'],
-                               data['InteractiveApiKey'], data['InteractiveSecretKey'], xts_id))
+        cursor.execute(query, (data['brokerServer'], data['MarketApiKey'], data['MarketSecretKey'],
+                               data['InteractiveApiKey'], data['InteractiveSecretKey'], data['MarketUrl'], data['InteractiveUrl'], xts_id))
 
     @staticmethod
     def delete_broker_credentials(cursor, xts_id):

@@ -17,7 +17,18 @@ def register_user(cursor, data):
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
         data['password'] = hashed_password
         User.register_user(cursor, data)
-        return jsonify({"message": "User registered successfully"}), 200
+        user = User.find_by_email(cursor, data['email'])
+        print(user)
+        if user:
+            access_token = create_jwt_token(identity=user.email)
+            user_data = {
+                "id": user.id,
+                "phone_number": user.phone_number,
+                "first_name ": user.first_name,
+                "last_name ": user.last_name,
+                "email": user.email
+            }
+        return jsonify({"access_token": access_token, "user_data": user_data}), 200
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
     except Exception as e:
@@ -25,7 +36,6 @@ def register_user(cursor, data):
 
 def login_user(cursor, email, password):
     try:
-        print(email)
         user = User.find_by_email(cursor, email)
         if user and bcrypt.check_password_hash(user.password, password):
             access_token = create_jwt_token(identity=user.email)
@@ -50,7 +60,7 @@ def login_user(cursor, email, password):
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
             if brokercredentials:
                 column_names = [
-                    "id", "MarketId", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "userId"
+                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"
                 ]
                 formatted_brokercredentials = format_query_result(brokercredentials, column_names)
             return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials}), 200

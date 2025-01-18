@@ -3,7 +3,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from routes.auth_routes import auth_routes
 from routes.profile_routes import profile_routes
-from routes.xts_auth_routes import xts_auth_routes
+from routes.broker_credentials_routes import broker_credentials_routes
 from routes.settings_routes import settings_routes
 from models.user_model import init_app
 import logging
@@ -31,7 +31,7 @@ http = HTTP()
 # Register routes
 app.register_blueprint(auth_routes, url_prefix='/auth')
 app.register_blueprint(profile_routes, url_prefix='/user')
-app.register_blueprint(xts_auth_routes, url_prefix='/xts')
+app.register_blueprint(broker_credentials_routes, url_prefix='/brokercredentials')
 app.register_blueprint(settings_routes, url_prefix='/settings')
 
 # Error handling

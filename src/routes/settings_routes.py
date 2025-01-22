@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from controllers.settings_controller import create_setting, get_setting_by_userId, update_setting, delete_setting
 from models.settings_model import mysql

@@ -109,3 +109,52 @@ class Settings:
     def delete_setting(cursor, userId):
         query = "DELETE FROM settings WHERE userId = %s"
         cursor.execute(query, (userId,))
+
+
+    @staticmethod
+    def upsert_setting(cursor, data):
+        # Define the fields that need to be updated in case of a duplicate userId
+        update_values = {}
+        required_fields = [
+            'theme_mode', 'symbol', 'open_order_type', 'close_order_type', 
+            'predefined_sl', 'sl_type', 'is_trailing', 'predefined_target', 
+            'target_type', 'predefined_mtm_sl', 'mtm_sl_type', 
+            'predefined_mtm_target', 'mtm_target_type', 'lot_multiplier',
+        ]
+
+        for field in required_fields:
+            update_values[field] = data.get(field)
+
+        query = """
+            INSERT INTO settings (
+                theme_mode, symbol, open_order_type, close_order_type, 
+                predefined_sl, sl_type, is_trailing, predefined_target, 
+                target_type, predefined_mtm_sl, mtm_sl_type, 
+                predefined_mtm_target, mtm_target_type, lot_multiplier, userId
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                {}
+        """.format(', '.join('{} = %s'.format(key) for key in update_values))
+
+        # Handle missing data by replacing missing keys with default or None
+        values = (
+            data.get('theme_mode', 'dark'),
+            data.get('symbol', None),
+            data.get('open_order_type', 'Market'),
+            data.get('close_order_type', 'Market'),
+            data.get('predefined_sl', None),
+            data.get('sl_type', 'Points'),
+            int(data.get('is_trailing', 0)),
+            data.get('predefined_target', None),
+            data.get('target_type', 'Points'),
+            data.get('predefined_mtm_sl', None),
+            data.get('mtm_sl_type', 'Points'),
+            data.get('predefined_mtm_target', None),
+            data.get('mtm_target_type', 'Points'),
+            int(data.get('lot_multiplier', 1)),
+            data.get('userId'),
+            *update_values.values()  # Add the update values for the ON DUPLICATE KEY UPDATE
+        )
+
+        cursor.execute(query, values)
+

@@ -9,7 +9,7 @@ http = HTTP()
 
 def create_setting(cursor, data):
     try:
-        Settings.create_setting(cursor, data)
+        Settings.upsert_setting(cursor, data)
         return jsonify({"message": "Setting created successfully"}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred while creating the setting", "error": str(e)}), 500

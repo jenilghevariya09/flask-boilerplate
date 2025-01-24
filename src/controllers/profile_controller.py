@@ -22,9 +22,9 @@ def get_user_profile(cursor, email):
     except Exception as e:
         return jsonify({"message": "An error occurred while retrieving the profile", "error": str(e)}), 500
 
-def update_user_profile(cursor, user_id, data):
+def update_user_profile(cursor, userId, data):
     try:
-        User.update_profile(cursor, user_id, data)
+        User.update_profile(cursor, userId, data)
         return jsonify({"message": "Profile updated successfully"}), 200
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
@@ -42,9 +42,9 @@ def get_all_users(cursor, page_no, page_limit):
     except Exception as e:
         return http.response({}, 500, "An error occurred while retrieving users",str(e))
 
-def get_user_by_id(cursor, user_id):
+def get_user_by_id(cursor, userId):
     try:
-        result = User.get_user_by_id(cursor, user_id)
+        result = User.get_user_by_id(cursor, userId)
         if result:
             column_names = ["id", "first_name", "last_name", "email", "phone_number" ]
             formatted_result = format_single_query_result(result, column_names)

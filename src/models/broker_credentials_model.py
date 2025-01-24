@@ -47,7 +47,7 @@ class BrokerCredentials:
         cursor.execute(query, (broker_id,))
 
     @staticmethod
-    def get_broker_credentials_by_user(cursor, user_id):
+    def get_broker_credentials_by_user(cursor, userId):
         query = "SELECT * FROM brokercredentials WHERE userId = %s"
-        cursor.execute(query, (user_id,))
+        cursor.execute(query, (userId,))
         return cursor.fetchall()

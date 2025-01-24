@@ -42,9 +42,9 @@ def delete_broker_credentials(cursor, broker_id):
     except Exception as e:
         return jsonify({"message": "An error occurred while deleting BrokerCredentials", "error": str(e)}), 500
 
-def get_broker_credentials_by_user(cursor, user_id):
+def get_broker_credentials_by_user(cursor, userId):
     try:
-        result = BrokerCredentials.get_broker_credentials_by_user(cursor, user_id)
+        result = BrokerCredentials.get_broker_credentials_by_user(cursor, userId)
         if result:
             column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"]
             formatted_result = format_query_result(result, column_names)

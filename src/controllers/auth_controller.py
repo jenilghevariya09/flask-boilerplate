@@ -19,7 +19,7 @@ def register_user(cursor, data):
         data['password'] = hashed_password
         User.register_user(cursor, data)
         user = User.find_by_email(cursor, data['email'])
-        print(user)
+        formatted_setting = None
         if user:
             access_token = create_jwt_token(identity=user.email)
             user_data = {
@@ -29,7 +29,17 @@ def register_user(cursor, data):
                 "last_name ": user.last_name,
                 "email": user.email
             }
-        return jsonify({"access_token": access_token, "user_data": user_data}), 200
+            Settings.upsert_setting(cursor, {"userId": user.id})
+            setting = Settings.get_setting_by_userId(cursor, user.id)
+            if setting:
+                column_names = [
+                    "id", "theme_mode", "symbol", "open_order_type", "close_order_type",
+                    "predefined_sl", "sl_type", "is_trailing", "predefined_target",
+                    "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
+                    "mtm_target_type", "lot_multiplier", "userId"
+                ]
+                formatted_setting = format_single_query_result(setting, column_names)
+        return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting,}), 200
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
     except Exception as e:

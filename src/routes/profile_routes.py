@@ -53,12 +53,12 @@ def get_users():
         return jsonify({"message": "An error occurred while retrieving users", "error": str(e)}), 500
 
 # Get user profile by ID
-@profile_routes.route('/<int:user_id>', methods=['GET'])
+@profile_routes.route('/<int:userId>', methods=['GET'])
 @jwt_required()
-def get_user_profile(user_id):
+def get_user_profile(userId):
     try:
         cursor = mysql.connection.cursor()
-        response = get_user_by_id(cursor, user_id)
+        response = get_user_by_id(cursor, userId)
         cursor.close()
         return response
     except Exception as e:

@@ -9,7 +9,7 @@ http = HTTP()
 
 def create_setting(cursor, data):
     try:
-        Settings.upsert_setting(cursor, data)
+        Settings.create_setting(cursor, data)
         return jsonify({"message": "Setting created successfully"}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred while creating the setting", "error": str(e)}), 500
@@ -43,3 +43,10 @@ def delete_setting(cursor, userId):
         return jsonify({"message": "Setting deleted successfully"}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred while deleting the setting", "error": str(e)}), 500
+
+def upsert_setting(cursor, data):
+    try:
+        Settings.upsert_setting(cursor, data)
+        return jsonify({"message": "Operation completed successfully"}), 200
+    except Exception as e:
+        return jsonify({"message": "An error occurred while creating the setting", "error": str(e)}), 500

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from controllers.broker_credentials_controller import create_broker_credentials, get_broker_credentials, update_broker_credentials, delete_broker_credentials, get_broker_credentials_by_user
 from models.user_model import mysql, User
+from utils.callApi import call_host_lookup_api, call_user_session_api, call_user_market_api
 
 broker_credentials_routes = Blueprint('broker_credentials_routes', __name__)
 
@@ -13,8 +14,29 @@ def create_broker():
         data = request.get_json()
         if not data:
             return jsonify({"message": "Invalid input"}), 400
+        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        response = create_broker_credentials(cursor, data)
+        user_data = User.find_by_email(cursor, email)
+        
+        user_market_response = call_user_market_api(cursor, data, user_data.id)
+        if user_market_response.get('type') == 'error':
+            status_code = user_market_response.get('result').get('status') if user_market_response.get('result').get('status') else 500
+            message = user_market_response.get('result').get('message') if user_market_response.get('result').get('message') else "An error occurred"
+            return jsonify({"message": message, "error": user_market_response}), status_code
+
+        host_lookup_response = call_host_lookup_api()
+        if host_lookup_response.get('type') == 'error':
+            status_code = host_lookup_response.get('result').get('status') if host_lookup_response.get('result').get('status') else 500
+            message = host_lookup_response.get('result').get('message') if host_lookup_response.get('result').get('message') else "An error occurred"
+            return jsonify({"message": message, "error": host_lookup_response}), status_code
+
+        user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.id)
+        if user_session_response.get('type') == 'error':
+            status_code = user_session_response.get('result').get('status') if user_session_response.get('result').get('status') else 500
+            message = user_session_response.get('result').get('message') if user_session_response.get('result').get('message') else "An error occurred"
+            return jsonify({"message": message, "error": user_session_response}), status_code
+        
+        response = create_broker_credentials(cursor, data, user_market_response, host_lookup_response, user_session_response)
         mysql.connection.commit()
         cursor.close()
         return response

@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from utils.auth_helpers import create_jwt_token
 from utils.commonUtils import format_query_result, format_single_query_result
 from utils.httpUtils import HTTP
+from utils.callApi import call_host_lookup_api, call_user_session_api, call_user_market_api
 
 http = HTTP()
 
@@ -58,12 +59,23 @@ def login_user(cursor, email, password):
                 ]
                 formatted_setting = format_single_query_result(setting, column_names)
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
+            host_lookup_response = None
+            user_market_response = None
+            user_session_response = None
             if brokercredentials:
                 column_names = [
                     "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"
                 ]
                 formatted_brokercredentials = format_query_result(brokercredentials, column_names)
-            return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials}), 200
+                
+                if formatted_brokercredentials and formatted_brokercredentials[0]:
+                    data = formatted_brokercredentials[0]
+                    user_market_response = call_user_market_api(cursor, data, user_data.get('id'))
+                    
+                    host_lookup_response = call_host_lookup_api()
+                    if not host_lookup_response.get('isError', False):
+                        user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.get('id'))
+            return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "user_market_response": user_market_response, "host_lookup": host_lookup_response, "Interactive_session" : user_session_response}), 200
         return jsonify({"message": "Invalid credentials"}), 401
     except Exception as e:
         return jsonify({"message": "An error occurred during login", "error": str(e)}), 500

@@ -5,12 +5,24 @@ mysql = MySQL()
 class BrokerCredentials:
     @staticmethod
     def create_broker_credentials(cursor, data):
+        update_values = {}
+        required_fields = ['userId', 'brokerServer', 'MarketApiKey', 'MarketSecretKey', 'InteractiveApiKey', 'InteractiveSecretKey', 'MarketUrl', 'InteractiveUrl']
+    
+        for field in required_fields:
+            update_values[field] = data.get(field)
+    
         query = """
-            INSERT INTO brokercredentials (brokerServer, MarketApiKey, MarketSecretKey, InteractiveApiKey, InteractiveSecretKey, MarketUrl, InteractiveUrl, userId)
+            INSERT INTO brokercredentials (userId, brokerServer, MarketApiKey, MarketSecretKey, InteractiveApiKey, InteractiveSecretKey, MarketUrl, InteractiveUrl)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(query, (data['brokerServer'], data['MarketApiKey'], data['MarketSecretKey'],
-                               data['InteractiveApiKey'], data['InteractiveSecretKey'], data['MarketUrl'], data['InteractiveUrl'], data['userId']))
+            ON DUPLICATE KEY UPDATE
+                {}
+        """.format(', '.join('{} = %s'.format(key) for key in update_values))
+        values = (
+            update_values['userId'], update_values['brokerServer'], update_values['MarketApiKey'], update_values['MarketSecretKey'], 
+            update_values['InteractiveApiKey'], update_values['InteractiveSecretKey'], update_values['MarketUrl'], update_values['InteractiveUrl'],
+            *update_values.values()
+        )
+        cursor.execute(query, values)
 
     @staticmethod
     def get_broker_credentials(cursor, broker_id):

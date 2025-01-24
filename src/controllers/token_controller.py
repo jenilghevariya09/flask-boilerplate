@@ -1,0 +1,39 @@
+from flask import jsonify, request
+from models.broker_credentials_model import BrokerCredentials
+from utils.commonUtils import format_query_result, format_single_query_result
+from utils.callApi import call_host_lookup_api, call_user_session_api, call_user_market_api
+
+
+def refresh_broker_token(cursor, user_data):
+    try:
+        result = BrokerCredentials.get_broker_credentials_by_user(cursor, user_data.id)
+        if result:
+            column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"]
+            formatted_result = format_query_result(result, column_names)
+            if formatted_result and formatted_result[0]:
+                data = formatted_result[0]
+                # user_market_response = call_user_market_api(cursor, data, user_data.id)
+                # if user_market_response.get('type') == 'error':
+                #     status_code = user_market_response.get('result').get('status') if user_market_response.get('result').get('status') else 500
+                #     message = user_market_response.get('result').get('message') if user_market_response.get('result').get('message') else "An error occurred"
+                #     return jsonify({"message": message, "error": user_market_response}), status_code
+
+                host_lookup_response = call_host_lookup_api()
+                if host_lookup_response.get('type') == 'error':
+                    status_code = host_lookup_response.get('result').get('status') if host_lookup_response.get('result').get('status') else 500
+                    message = host_lookup_response.get('result').get('message') if host_lookup_response.get('result').get('message') else "An error occurred"
+                    return jsonify({"message": message, "error": host_lookup_response}), status_code
+
+                user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.id)
+                if user_session_response.get('type') == 'error':
+                    status_code = user_session_response.get('result').get('status') if user_session_response.get('result').get('status') else 500
+                    message = user_session_response.get('result').get('message') if user_session_response.get('result').get('message') else "An error occurred"
+                    return jsonify({"message": message, "error": user_session_response}), status_code
+                
+                return jsonify({"message": "Broker token refreshed successfully", "host_lookup": host_lookup_response, "Interactive_session" : user_session_response}), 200
+            else:
+                return jsonify({"message": "Broker credentials not found"}), 404
+        else:
+            return jsonify({"message": "Broker credentials not found"}), 404
+    except Exception as e:
+        return jsonify({"message": "Error creating token", "error": str(e)}), 500

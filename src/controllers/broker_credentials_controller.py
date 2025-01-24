@@ -6,14 +6,14 @@ from utils.httpUtils import HTTP
 
 http = HTTP()
 
-def create_broker_credentials(cursor, data):
+def create_broker_credentials(cursor, data, user_market_response, host_lookup_response, user_session_response):
     try:
         BrokerCredentials.create_broker_credentials(cursor, data)
         result = BrokerCredentials.get_broker_credentials_by_user(cursor, data.get('userId'))
         if result:
             column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"]
             formatted_result = format_query_result(result, column_names)
-            return http.response({"data":formatted_result},200, 'Operation Executed Successfully')
+            return jsonify({"data":formatted_result, "user_market_response": user_market_response, "host_lookup": host_lookup_response, "Interactive_session" : user_session_response, "message": "BrokerCredentials created successfully"}), 200
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
     except Exception as e:

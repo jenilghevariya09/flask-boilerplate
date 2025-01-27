@@ -33,7 +33,7 @@ def register_user(cursor, data):
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
                 column_names = [
-                    "id", "theme_mode", "symbol", "open_order_type", "close_order_type",
+                    "id", "theme_mode", "symbol", "open_order_type", "limit_price",
                     "predefined_sl", "sl_type", "is_trailing", "predefined_target",
                     "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
                     "mtm_target_type", "lot_multiplier", "userId"
@@ -62,7 +62,7 @@ def login_user(cursor, email, password):
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
                 column_names = [
-                    "id", "theme_mode", "symbol", "open_order_type", "close_order_type",
+                    "id", "theme_mode", "symbol", "open_order_type", "limit_price",
                     "predefined_sl", "sl_type", "is_trailing", "predefined_target",
                     "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
                     "mtm_target_type", "lot_multiplier", "userId"

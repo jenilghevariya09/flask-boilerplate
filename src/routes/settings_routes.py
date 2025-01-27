@@ -18,12 +18,14 @@ def create():
     except Exception as e:
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
-@settings_routes.route('/<int:userId>', methods=['GET'])
+@settings_routes.route('/getSetting', methods=['GET'])
 @jwt_required()
-def get(userId):
+def get():
     try:
+        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        response = get_setting_by_userId(cursor, userId)
+        user_data = User.find_by_email(cursor, email)
+        response = get_setting_by_userId(cursor, user_data.id)
         cursor.close()
         return response
     except Exception as e:

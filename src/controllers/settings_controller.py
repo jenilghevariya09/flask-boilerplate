@@ -19,7 +19,7 @@ def get_setting_by_userId(cursor, userId):
         setting = Settings.get_setting_by_userId(cursor, userId)
         if setting:
             column_names = [
-                "id", "theme_mode", "symbol", "open_order_type", "close_order_type",
+                "id", "theme_mode", "symbol", "open_order_type", "limit_price",
                 "predefined_sl", "sl_type", "is_trailing", "predefined_target",
                 "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
                 "mtm_target_type", "lot_multiplier", "userId"
@@ -47,6 +47,16 @@ def delete_setting(cursor, userId):
 def upsert_setting(cursor, data):
     try:
         Settings.upsert_setting(cursor, data)
+        setting = Settings.get_setting_by_userId(cursor, data['userId'])
+        if setting:
+            column_names = [
+                "id", "theme_mode", "symbol", "open_order_type", "limit_price",
+                "predefined_sl", "sl_type", "is_trailing", "predefined_target",
+                "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
+                "mtm_target_type", "lot_multiplier", "userId"
+            ]
+            formatted_setting = format_single_query_result(setting, column_names)
+            return jsonify(formatted_setting), 200
         return jsonify({"message": "Operation completed successfully"}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred while creating the setting", "error": str(e)}), 500

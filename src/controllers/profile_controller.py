@@ -10,12 +10,15 @@ def get_user_profile(cursor, email):
     try:
         user = User.find_by_email(cursor, email)
         if user:
-            return {
+            return {{
                 "phone_number": user.phone_number,
-                "first_name ": user.first_name,
-                "last_name ": user.last_name,
-                "email": user.email
-            }, 200
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "country": user.country,
+                "state": user.state,
+                "city": user.city,
+            }}, 200
         return jsonify({"message": "User not found"}), 404
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
@@ -48,7 +51,7 @@ def get_user_by_id(cursor, userId):
         if result:
             column_names = ["id", "first_name", "last_name", "email", "phone_number" ]
             formatted_result = format_single_query_result(result, column_names)
-            return http.response({"data":formatted_result}, 200, 'Operation Executed Successfully')
+            return jsonify({"data":formatted_result}), 200
         return http.response({}, 404, 'User not found')
     except Exception as e:
         return http.response({}, 500, "An error occurred while retrieving User Profile",str(e))

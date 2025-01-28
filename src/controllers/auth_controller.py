@@ -23,11 +23,13 @@ def register_user(cursor, data):
         if user:
             access_token = create_jwt_token(identity=user.email)
             user_data = {
-                "id": user.id,
                 "phone_number": user.phone_number,
-                "first_name ": user.first_name,
-                "last_name ": user.last_name,
-                "email": user.email
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "country": user.country,
+                "state": user.state,
+                "city": user.city,
             }
             Settings.upsert_setting(cursor, {"userId": user.id})
             setting = Settings.get_setting_by_userId(cursor, user.id)
@@ -51,11 +53,13 @@ def login_user(cursor, email, password):
         if user and bcrypt.check_password_hash(user.password, password):
             access_token = create_jwt_token(identity=user.email)
             user_data = {
-                "id": user.id,
                 "phone_number": user.phone_number,
-                "first_name ": user.first_name,
-                "last_name ": user.last_name,
-                "email": user.email
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "country": user.country,
+                "state": user.state,
+                "city": user.city,
             }
             formatted_setting = None;
             formatted_brokercredentials = None;

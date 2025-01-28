@@ -11,7 +11,7 @@ def create_broker_credentials(cursor, data, user_market_response, host_lookup_re
         BrokerCredentials.create_broker_credentials(cursor, data)
         result = BrokerCredentials.get_broker_credentials_by_user(cursor, data.get('userId'))
         if result:
-            column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"]
+            column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId"]
             formatted_result = format_query_result(result, column_names)
             return jsonify({"data":formatted_result, "user_market_response": user_market_response, "host_lookup": host_lookup_response, "Interactive_session" : user_session_response, "message": "BrokerCredentials created successfully"}), 200
     except SQLAlchemyError as e:
@@ -46,7 +46,7 @@ def get_broker_credentials_by_user(cursor, userId):
     try:
         result = BrokerCredentials.get_broker_credentials_by_user(cursor, userId)
         if result:
-            column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"]
+            column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId"]
             formatted_result = format_query_result(result, column_names)
             return http.response({"data":formatted_result},200, 'Operation Executed Successfully')
         return jsonify({"message": "No BrokerCredentials data found for this user"}), 404

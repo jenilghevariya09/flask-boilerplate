@@ -23,7 +23,10 @@ def create_broker():
             status_code = user_market_response.get('result').get('status') if user_market_response.get('result').get('status') else 500
             message = user_market_response.get('result').get('message') if user_market_response.get('result').get('message') else "An error occurred"
             return jsonify({"message": message, "error": user_market_response}), status_code
-
+        
+        if user_market_response.get('result', {}).get('userID'):
+            data['marketUserId'] = user_market_response.get('result', {}).get('userID')
+            
         host_lookup_response = call_host_lookup_api()
         if host_lookup_response.get('type') == 'error':
             status_code = host_lookup_response.get('result').get('status') if host_lookup_response.get('result').get('status') else 500
@@ -36,6 +39,9 @@ def create_broker():
             message = user_session_response.get('result').get('message') if user_session_response.get('result').get('message') else "An error occurred"
             return jsonify({"message": message, "error": user_session_response}), status_code
         
+        if user_session_response.get('result', {}).get('userID'):
+            data['interactiveUserId'] = user_session_response.get('result', {}).get('userID')
+            
         response = create_broker_credentials(cursor, data, user_market_response, host_lookup_response, user_session_response)
         mysql.connection.commit()
         cursor.close()

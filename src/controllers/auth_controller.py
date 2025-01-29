@@ -31,7 +31,7 @@ def register_user(cursor, data):
                 "state": user.state,
                 "city": user.city,
             }
-            Settings.upsert_setting(cursor, {"userId": user.id})
+            Settings.upsert_setting(cursor, {"userId": user.id, "theme_mode" : 'dark'})
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
                 column_names = [

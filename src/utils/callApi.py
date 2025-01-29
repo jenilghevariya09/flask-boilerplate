@@ -60,6 +60,8 @@ def call_user_market_api(cursor, data, userId):
         response = requests.post(url, headers=headers, json=payload)
         resultData = response.json()
         if resultData.get('type') == 'success':
+            if resultData.get('result', {}).get('userID') != data['marketUserId']:
+                return {"isError": True, 'error': "User Id does not match"}
             token = resultData.get('result').get('token')
             if token:
                 Token.upsert_token(cursor, userId, None, token, None)

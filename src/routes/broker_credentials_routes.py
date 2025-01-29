@@ -10,44 +10,58 @@ broker_credentials_routes = Blueprint('broker_credentials_routes', __name__)
 @broker_credentials_routes.route('/create', methods=['POST'])
 @jwt_required()
 def create_broker():
+    cursor = None
     try:
         data = request.get_json()
         if not data:
             return jsonify({"message": "Invalid input"}), 400
+
         email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        user_data = User.find_by_email(cursor, email)
+        user = User.find_by_email(cursor, email)
+        data['userId'] = user.id
         
-        user_market_response = call_user_market_api(cursor, data, user_data.id)
-        if user_market_response.get('type') == 'error':
-            status_code = user_market_response.get('result').get('status') if user_market_response.get('result').get('status') else 500
-            message = user_market_response.get('result').get('message') if user_market_response.get('result').get('message') else "An error occurred"
-            return jsonify({"message": message, "error": user_market_response}), status_code
-        
-        if user_market_response.get('result', {}).get('userID'):
-            data['marketUserId'] = user_market_response.get('result', {}).get('userID')
-            
-        host_lookup_response = call_host_lookup_api()
-        if host_lookup_response.get('type') == 'error':
-            status_code = host_lookup_response.get('result').get('status') if host_lookup_response.get('result').get('status') else 500
-            message = host_lookup_response.get('result').get('message') if host_lookup_response.get('result').get('message') else "An error occurred"
-            return jsonify({"message": message, "error": host_lookup_response}), status_code
+        # Helper function to handle API errors
+        def check_error(response):
+            if response.get('type') == 'error' or response.get('isError'):
+                message = (response.get('result', {}).get('message') or 
+                          response.get('description') or 
+                          response.get('error') or 
+                          "An error occurred")
+                return jsonify({"message": message, "error": response}), 400
+            return None
 
-        user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.id)
-        if user_session_response.get('type') == 'error':
-            status_code = user_session_response.get('result').get('status') if user_session_response.get('result').get('status') else 500
-            message = user_session_response.get('result').get('message') if user_session_response.get('result').get('message') else "An error occurred"
-            return jsonify({"message": message, "error": user_session_response}), status_code
+        # User Market API
+        market_response = call_user_market_api(cursor, data, user.id)
+        if (error := check_error(market_response)):
+            return error
+        if market_response.get('result', {}).get('userID'):
+            data['marketUserId'] = market_response.get('result', {}).get('userID')
+
+        # Host Lookup API
+        host_response = call_host_lookup_api()
+        if (error := check_error(host_response)):
+            return error
+
+        # User Session API
+        session_response = call_user_session_api(cursor, data, host_response, user.id)
+        if (error := check_error(session_response)):
+            return error
+        if session_response.get('result', {}).get('userID'):
+            data['interactiveUserId'] = session_response.get('result', {}).get('userID')
+
+        # Create broker credentials
+        response = create_broker_credentials(cursor, data, market_response, host_response, session_response)
         
-        if user_session_response.get('result', {}).get('userID'):
-            data['interactiveUserId'] = user_session_response.get('result', {}).get('userID')
-            
-        response = create_broker_credentials(cursor, data, user_market_response, host_lookup_response, user_session_response)
         mysql.connection.commit()
-        cursor.close()
         return response
+
     except Exception as e:
+        mysql.connection.rollback()
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
+    finally:
+        if cursor:
+            cursor.close()
 
 # Get BrokerCredentials by ID
 @broker_credentials_routes.route('/<int:broker_id>', methods=['GET'])

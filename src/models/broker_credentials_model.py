@@ -6,13 +6,13 @@ class BrokerCredentials:
     @staticmethod
     def create_broker_credentials(cursor, data):
         update_values = {}
-        required_fields = ['userId', 'brokerServer', 'MarketApiKey', 'MarketSecretKey', 'InteractiveApiKey', 'InteractiveSecretKey', 'MarketUrl', 'InteractiveUrl','interactiveUserId', 'marketUserId']
+        required_fields = ['userId', 'brokerServer', 'MarketApiKey', 'MarketSecretKey', 'InteractiveApiKey', 'InteractiveSecretKey', 'MarketUrl', 'InteractiveUrl', 'interactiveUserId', 'marketUserId']
     
         for field in required_fields:
             update_values[field] = data.get(field)
     
         query = """
-            INSERT INTO brokercredentials (userId, brokerServer, MarketApiKey, MarketSecretKey, InteractiveApiKey, InteractiveSecretKey, MarketUrl, InteractiveUrl,'interactiveUserId', 'marketUserId')
+            INSERT INTO brokercredentials (userId, brokerServer, MarketApiKey, MarketSecretKey, InteractiveApiKey, InteractiveSecretKey, MarketUrl, InteractiveUrl, interactiveUserId, marketUserId)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 {}
@@ -20,7 +20,7 @@ class BrokerCredentials:
         values = (
             update_values['userId'], update_values['brokerServer'], update_values['MarketApiKey'], update_values['MarketSecretKey'], 
             update_values['InteractiveApiKey'], update_values['InteractiveSecretKey'], update_values['MarketUrl'], update_values['InteractiveUrl'],
-            update_values['interactiveUserId'], update_values['marketUserId']
+            update_values['interactiveUserId'], update_values['marketUserId'],
             *update_values.values()
         )
         cursor.execute(query, values)

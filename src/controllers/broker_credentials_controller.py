@@ -48,7 +48,8 @@ def get_broker_credentials_by_user(cursor, userId):
         if result:
             column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId"]
             formatted_result = format_query_result(result, column_names)
-            return http.response({"data":formatted_result},200, 'Operation Executed Successfully')
+            if formatted_result and formatted_result[0]:
+                return jsonify({"data":formatted_result[0],"message": 'Operation Executed Successfully'}), 200
         return jsonify({"message": "No BrokerCredentials data found for this user"}), 404
     except Exception as e:
         return jsonify({"message": "An error occurred while retrieving BrokerCredentials data", "error": str(e)}), 500

@@ -106,12 +106,14 @@ def delete_broker(broker_id):
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
 # Get BrokerCredentials data by userId
-@broker_credentials_routes.route('/user/<int:userId>', methods=['GET'])
+@broker_credentials_routes.route('/get', methods=['GET'])
 @jwt_required()
-def get_broker_by_user(userId):
+def get_broker_by_user():
     try:
+        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        response = get_broker_credentials_by_user(cursor, userId)
+        user = User.find_by_email(cursor, email)
+        response = get_broker_credentials_by_user(cursor, user.id)
         cursor.close()
         return response
     except Exception as e:

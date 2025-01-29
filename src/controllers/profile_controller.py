@@ -2,9 +2,6 @@ from flask import jsonify
 from models.user_model import User
 from sqlalchemy.exc import SQLAlchemyError
 from utils.commonUtils import format_query_result, format_single_query_result
-from utils.httpUtils import HTTP
-
-http = HTTP()
 
 def get_user_profile(cursor, email):
     try:
@@ -41,10 +38,10 @@ def get_all_users(cursor, page_no, page_limit):
         if result:
             column_names = ["id", "first_name", "last_name", "email", "phone_number" ]
             formatted_result = format_query_result(result, column_names)
-            return http.response({"data":formatted_result},200, 'Operation Executed Successfully')
-        return http.response({}, 404, 'No users found')
+            return jsonify({"data": formatted_result}), 200
+        return jsonify({"message": "User not found"}), 404
     except Exception as e:
-        return http.response({}, 500, "An error occurred while retrieving users",str(e))
+        return jsonify({"message": "An error occurred while retrieving users", "error": str(e)}), 500
 
 def get_user_by_id(cursor, userId):
     try:
@@ -52,7 +49,7 @@ def get_user_by_id(cursor, userId):
         if result:
             column_names = ["id", "first_name", "last_name", "email", "phone_number" ]
             formatted_result = format_single_query_result(result, column_names)
-            return jsonify({"data":formatted_result}), 200
-        return http.response({}, 404, 'User not found')
+            return jsonify({"data": formatted_result}), 200
+        return jsonify({"message": "User not found"}), 404
     except Exception as e:
-        return http.response({}, 500, "An error occurred while retrieving User Profile",str(e))
+        return jsonify({"message": "An error occurred while retrieving User Profile", "error": str(e)}), 500

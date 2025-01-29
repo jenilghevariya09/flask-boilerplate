@@ -56,15 +56,15 @@ def handle_invalid_token(err_msg):
 # Error handling
 @app.errorhandler(404)
 def not_found(error):
-    return http.response([], 404)
+    return jsonify({"message": 'Not Found', "error": error}), 404
 
 @app.errorhandler(400)
 def bad_request(error):
-    return http.response([], 400)
+    return jsonify({"message": 'Bad Request', "error": error}), 400
 
 @app.errorhandler(500)
 def internal_error(error):
-    return http.response([], 500)
+    return jsonify({"message": 'Internal Server Error', "error": error}), 500
 
 # Global error handler for SQL exceptions
 @app.errorhandler(Exception)

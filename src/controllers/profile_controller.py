@@ -10,7 +10,7 @@ def get_user_profile(cursor, email):
     try:
         user = User.find_by_email(cursor, email)
         if user:
-            return {{
+            user_details = {
                 "phone_number": user.phone_number,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
@@ -18,7 +18,8 @@ def get_user_profile(cursor, email):
                 "country": user.country,
                 "state": user.state,
                 "city": user.city,
-            }}, 200
+            }
+            return jsonify({"data": user_details}), 200
         return jsonify({"message": "User not found"}), 404
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500

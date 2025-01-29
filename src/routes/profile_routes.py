@@ -55,7 +55,7 @@ def get_users():
 # Get user profile by ID
 @profile_routes.route('/<int:userId>', methods=['GET'])
 @jwt_required()
-def get_user_profile(userId):
+def get_user_by_user_id(userId):
     try:
         cursor = mysql.connection.cursor()
         response = get_user_by_id(cursor, userId)

@@ -34,3 +34,7 @@ class Token:
         )
         cursor.execute(query, values)
 
+    @staticmethod
+    def delete_tokens(cursor, userId):
+        query = "DELETE FROM tokens WHERE userId = %s"
+        cursor.execute(query, (userId,))

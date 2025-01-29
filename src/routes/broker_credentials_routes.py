@@ -7,9 +7,9 @@ from utils.callApi import call_host_lookup_api, call_user_session_api, call_user
 broker_credentials_routes = Blueprint('broker_credentials_routes', __name__)
 
 # Create BrokerCredentials
-@broker_credentials_routes.route('/create', methods=['POST'])
+@broker_credentials_routes.route('/upsert', methods=['POST'])
 @jwt_required()
-def create_broker():
+def upsert_broker():
     cursor = None
     try:
         data = request.get_json()

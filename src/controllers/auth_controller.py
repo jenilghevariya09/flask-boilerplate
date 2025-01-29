@@ -2,6 +2,7 @@ from flask import jsonify
 from models.user_model import User
 from models.settings_model import Settings
 from models.broker_credentials_model import BrokerCredentials
+from models.token import Token
 from flask_bcrypt import Bcrypt
 from sqlalchemy.exc import SQLAlchemyError
 from utils.auth_helpers import create_jwt_token
@@ -93,3 +94,16 @@ def login_user(cursor, email, password):
         return jsonify({"message": "Invalid credentials"}), 401
     except Exception as e:
         return jsonify({"message": "An error occurred during login", "error": str(e)}), 500
+
+def logout_user(cursor, email):
+    try:
+        user = User.find_by_email(cursor, email)
+        if user:
+            
+            Settings.upsert_setting(cursor, {"userId": user.id, "predefined_mtm_sl" : None, "predefined_mtm_target" : None})
+            Token.delete_tokens(cursor, user.id)
+            
+            return jsonify({"message": "User logged out successfully"}), 200
+        return jsonify({"message": "User not found"}), 404
+    except Exception as e:
+        return jsonify({"message": "An error occurred during logout", "error": str(e)}), 500

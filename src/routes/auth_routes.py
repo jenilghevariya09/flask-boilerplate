@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.auth_controller import register_user, login_user
+from controllers.auth_controller import register_user, login_user, logout_user
 from models.user_model import mysql
 
 auth_routes = Blueprint('auth_routes', __name__)
@@ -32,6 +32,19 @@ def login():
         response = login_user(cursor, email, password)
         cursor.close()
 
+        return response
+    except Exception as e:
+        return jsonify({"message": "An error occurred", "error": str(e)}), 500
+
+@auth_routes.route('/logout', methods=['GET'])
+@jwt_required()
+def logout():
+    try:
+        email = get_jwt_identity()
+        cursor = mysql.connection.cursor()
+        response = logout_user(cursor, email)
+        mysql.connection.commit()
+        cursor.close()
         return response
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500

@@ -1,9 +1,9 @@
 import requests
 from models.token import Token
 
-def call_host_lookup_api():
+def call_host_lookup_api(data):
     try:
-        url = 'http://ctrade.jainam.in:4001/hostlookup'
+        url = data['InteractiveUrl']
         headers = {
             'Content-Type': 'application/json',
         }
@@ -12,15 +12,22 @@ def call_host_lookup_api():
             'version': 'interactive_1.0.1',
         }
         response = requests.post(url, headers=headers, json=body)
-        return response.json()
+        
+        if response.status_code == 404:
+            return {"uniqueKey": '', "connectionString": data['InteractiveUrl'], "MarketUrl" : data['MarketUrl']}
+        response_json = response.json()
+        uniqueKey = response_json.get('result', {}).get('uniqueKey') or ''
+        connectionString = response_json.get('result', {}).get('connectionString') or data['InteractiveUrl']
+        
+        return {"uniqueKey": uniqueKey, "connectionString": connectionString, "MarketUrl" : data['MarketUrl']}
     except requests.exceptions.RequestException as e:
-        return {"isError": True,'error': str(e)}
+        return {"uniqueKey": '', "connectionString": data['InteractiveUrl'], "MarketUrl" : data['MarketUrl']}
 
 def call_user_session_api(cursor, data, host_lookup_response, userId):
     try:
-        uniqueKey = host_lookup_response.get('result', {}).get('uniqueKey')
-        connectionString = host_lookup_response.get('result', {}).get('connectionString')
-        if not uniqueKey or not connectionString:
+        uniqueKey = host_lookup_response['uniqueKey']
+        connectionString = host_lookup_response['connectionString'] 
+        if not connectionString:
             return {"isError": True, 'error': 'Invalid response from Host Lookup API.'}
 
         url = connectionString + '/user/session'
@@ -31,9 +38,11 @@ def call_user_session_api(cursor, data, host_lookup_response, userId):
             'appKey': data['InteractiveApiKey'],
             'secretKey': data['InteractiveSecretKey'],
             'source': 'WebAPI',
-            'uniqueKey': uniqueKey,
         }
         
+        if uniqueKey:
+            payload['uniqueKey'] = uniqueKey
+            
         response = requests.post(url, headers=headers, json=payload)
         resultData = response.json()
         if resultData.get('type') == 'success':
@@ -47,7 +56,7 @@ def call_user_session_api(cursor, data, host_lookup_response, userId):
     
 def call_user_market_api(cursor, data, userId):
     try:
-        url = 'http://ctrade.jainam.in:3001/apimarketdata/auth/login'
+        url = data['MarketUrl'] + '/auth/login'
         headers = {
             'Content-Type': 'application/json',
         }
@@ -56,15 +65,20 @@ def call_user_market_api(cursor, data, userId):
             'secretKey': data['MarketSecretKey'],
             'source': 'WebAPI',
         }
-
         response = requests.post(url, headers=headers, json=payload)
-        resultData = response.json()
-        if resultData.get('type') == 'success':
-            if resultData.get('result', {}).get('userID') != data['marketUserId']:
-                return {"isError": True, 'error': "User Id does not match"}
-            token = resultData.get('result').get('token')
-            if token:
-                Token.upsert_token(cursor, userId, None, token, None)
-        return resultData
+        if response.status_code == 404:
+            return {"isError": True, 'error': "Resource not found (404)"}
+        
+        if response.content:
+            resultData = response.json()
+            if resultData.get('type') == 'success':
+                if resultData.get('result', {}).get('userID') != data['marketUserId']:
+                    return {"isError": True, 'error': "User Id does not match"}
+                token = resultData.get('result').get('token')
+                if token:
+                    Token.upsert_token(cursor, userId, None, token, None)
+            return resultData
+        else:
+            return {"isError": True, 'error': "Empty response from server"}
     except requests.exceptions.RequestException as e:
         return {"isError": True, 'error': str(e)}

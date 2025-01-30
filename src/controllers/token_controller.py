@@ -20,13 +20,7 @@ def refresh_broker_token(cursor, user_data):
                 #           "An error occurred")
                 #     return jsonify({"message": message, "error": user_market_response}), 400
 
-                host_lookup_response = call_host_lookup_api()
-                if host_lookup_response.get('type') == 'error' or host_lookup_response.get('isError'):
-                    message = (host_lookup_response.get('result', {}).get('message') or 
-                          host_lookup_response.get('description') or 
-                          host_lookup_response.get('error') or 
-                          "An error occurred")
-                    return jsonify({"message": message, "error": host_lookup_response}), 400
+                host_lookup_response = call_host_lookup_api(data)
 
                 user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.id)
                 if user_session_response.get('type') == 'error' or user_session_response.get('isError'):

@@ -79,17 +79,35 @@ def login_user(cursor, email, password):
             user_session_response = None
             if brokercredentials:
                 column_names = [
-                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId"
+                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId"
                 ]
                 formatted_brokercredentials = format_query_result(brokercredentials, column_names)
                 
                 if formatted_brokercredentials and formatted_brokercredentials[0]:
                     data = formatted_brokercredentials[0]
+                    def check_error(response):
+                        if response.get('type') == 'error' or response.get('isError'):
+                            message = (response.get('result', {}).get('message') or 
+                                      response.get('description') or 
+                                      response.get('error') or 
+                                      "An error occurred")
+                            return jsonify({"message": message, "error": response}), 400
+                        return None
+
                     user_market_response = call_user_market_api(cursor, data, user_data.get('id'))
+                    if (error := check_error(user_market_response)):
+                        return error
+                    if user_market_response.get('result', {}).get('userID'):
+                        data['marketUserId'] = user_market_response.get('result', {}).get('userID')
+                                
+                    host_lookup_response = {"uniqueKey": '', "connectionString": data['InteractiveUrl'], "MarketUrl" : data['MarketUrl']}
+
+                    user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.get('id'))
+                    if (error := check_error(user_session_response)):
+                        return error
+                    if user_session_response.get('result', {}).get('userID'):
+                        data['interactiveUserId'] = user_session_response.get('result', {}).get('userID')
                     
-                    host_lookup_response = call_host_lookup_api()
-                    if not host_lookup_response.get('isError', False):
-                        user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.get('id'))
             return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "user_market_response": user_market_response, "host_lookup": host_lookup_response, "Interactive_session" : user_session_response}), 200
         return jsonify({"message": "Invalid credentials"}), 401
     except Exception as e:

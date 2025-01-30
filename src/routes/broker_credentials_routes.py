@@ -39,9 +39,7 @@ def upsert_broker():
             data['marketUserId'] = market_response.get('result', {}).get('userID')
 
         # Host Lookup API
-        host_response = call_host_lookup_api()
-        if (error := check_error(host_response)):
-            return error
+        host_response = call_host_lookup_api(data)
 
         # User Session API
         session_response = call_user_session_api(cursor, data, host_response, user.id)

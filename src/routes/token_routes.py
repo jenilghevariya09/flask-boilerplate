@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.token_controller import refresh_broker_token
+from controllers.token import refresh_broker_token
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from models.token import mysql
 from models.user_model import mysql, User

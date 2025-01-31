@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.settings_controller import create_setting, get_setting_by_userId, update_setting, delete_setting, upsert_setting
+from controllers.settings import create_setting, get_setting_by_userId, update_setting, delete_setting, upsert_setting
 from models.settings_model import mysql
 from models.user_model import mysql, User
 settings_routes = Blueprint('settings_routes', __name__)

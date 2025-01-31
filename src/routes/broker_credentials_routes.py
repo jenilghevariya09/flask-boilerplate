@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.broker_credentials_controller import create_broker_credentials, get_broker_credentials, update_broker_credentials, delete_broker_credentials, get_broker_credentials_by_user
+from controllers.broker_credentials import create_broker_credentials, get_broker_credentials, update_broker_credentials, delete_broker_credentials, get_broker_credentials_by_user
 from models.user_model import mysql, User
 from utils.callApi import call_host_lookup_api, call_user_session_api, call_user_market_api
 

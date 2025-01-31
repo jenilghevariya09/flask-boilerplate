@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.profile_controller import get_user_profile, update_user_profile, get_all_users, get_user_by_id
+from controllers.profile import get_user_profile, update_user_profile, get_all_users, get_user_by_id
 from models.user_model import mysql, User
 
 profile_routes = Blueprint('profile_routes', __name__)

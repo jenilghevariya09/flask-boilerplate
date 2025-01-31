@@ -100,7 +100,7 @@ def login_user(cursor, email, password):
                     if user_market_response.get('result', {}).get('userID'):
                         data['marketUserId'] = user_market_response.get('result', {}).get('userID')
                                 
-                    host_lookup_response = {"uniqueKey": '', "connectionString": data['InteractiveUrl'], "MarketUrl" : data['MarketUrl']}
+                    host_lookup_response = call_host_lookup_api(data)
 
                     user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.get('id'))
                     if (error := check_error(user_session_response)):

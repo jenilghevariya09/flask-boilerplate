@@ -37,9 +37,9 @@ def update_setting(cursor, userId, data):
     except Exception as e:
         return jsonify({"message": "An error occurred while updating the setting", "error": str(e)}), 500
 
-def delete_setting(cursor, userId):
+def reset_setting(cursor, userId):
     try:
-        Settings.delete_setting(cursor, userId)
+        Settings.reset_setting(cursor, userId)
         return jsonify({"message": "Setting deleted successfully"}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred while deleting the setting", "error": str(e)}), 500

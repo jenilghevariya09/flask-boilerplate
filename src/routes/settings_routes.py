@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.settings import create_setting, get_setting_by_userId, update_setting, delete_setting, upsert_setting
+from controllers.settings import create_setting, get_setting_by_userId, update_setting, reset_setting, upsert_setting
 from models.settings_model import mysql
 from models.user_model import mysql, User
 settings_routes = Blueprint('settings_routes', __name__)
@@ -44,14 +44,14 @@ def update(userId):
     except Exception as e:
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
-@settings_routes.route('/delete', methods=['DELETE'])
+@settings_routes.route('/reset', methods=['POST'])
 @jwt_required()
-def delete():
+def reset():
     try:
         email = get_jwt_identity()
         cursor = mysql.connection.cursor()
         user_data = User.find_by_email(cursor, email)
-        response = delete_setting(cursor, user_data.id)
+        response = reset_setting(cursor, user_data.id)
         mysql.connection.commit()
         cursor.close()
         return response

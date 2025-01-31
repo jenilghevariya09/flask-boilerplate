@@ -108,7 +108,7 @@ class Settings:
         # Execute the query
         cursor.execute(query, tuple(values))
 
-    def delete_setting(cursor, userId):
+    def reset_setting(cursor, userId):
     # Default values for the fields
         default_values = {
             'theme_mode': 'dark',

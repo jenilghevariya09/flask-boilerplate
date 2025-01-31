@@ -44,12 +44,14 @@ def update(userId):
     except Exception as e:
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
-@settings_routes.route('/<int:userId>', methods=['DELETE'])
+@settings_routes.route('/delete', methods=['DELETE'])
 @jwt_required()
-def delete(userId):
+def delete():
     try:
+        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        response = delete_setting(cursor, userId)
+        user_data = User.find_by_email(cursor, email)
+        response = delete_setting(cursor, user_data.id)
         mysql.connection.commit()
         cursor.close()
         return response

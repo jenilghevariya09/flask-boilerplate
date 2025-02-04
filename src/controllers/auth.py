@@ -32,7 +32,7 @@ def register_user(cursor, data):
                 "state": user.state,
                 "city": user.city,
             }
-            Settings.upsert_setting(cursor, {"userId": user.id, "theme_mode" : 'dark'})
+            Settings.upsert_setting(cursor, {"userId": user.id, "theme_mode" : 'light'})
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
                 column_names = [
@@ -62,8 +62,9 @@ def login_user(cursor, email, password):
                 "state": user.state,
                 "city": user.city,
             }
-            formatted_setting = None;
-            formatted_brokercredentials = None;
+            formatted_setting = None
+            formatted_brokercredentials = None
+            formatted_token = None
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
                 column_names = [
@@ -79,7 +80,7 @@ def login_user(cursor, email, password):
             user_session_response = None
             if brokercredentials:
                 column_names = [
-                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId"
+                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId", "client_code"
                 ]
                 formatted_brokercredentials = format_query_result(brokercredentials, column_names)
                 
@@ -107,8 +108,17 @@ def login_user(cursor, email, password):
                         return error
                     if user_session_response.get('result', {}).get('userID'):
                         data['interactiveUserId'] = user_session_response.get('result', {}).get('userID')
+                        
+                    client_code = user_session_response.get('result', {}).get('clientCodes')
+                    if client_code and client_code[0]:
+                        data['client_code'] = client_code[0]
                     
-            return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "user_market_response": user_market_response, "host_lookup": host_lookup_response, "Interactive_session" : user_session_response}), 200
+                token = Token.get_token_by_user(cursor, user.id)
+                if token:
+                    column_names = ["id", "interactive_token", "userId", "market_token", "interactive_url"]
+                    formatted_token = format_single_query_result(token, column_names)
+                    
+            return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "token": formatted_token}), 200
         return jsonify({"message": "Invalid credentials"}), 401
     except Exception as e:
         return jsonify({"message": "An error occurred during login", "error": str(e)}), 500
@@ -125,3 +135,45 @@ def logout_user(cursor, email):
         return jsonify({"message": "User not found"}), 404
     except Exception as e:
         return jsonify({"message": "An error occurred during logout", "error": str(e)}), 500
+    
+def preload_data(cursor, email):
+    try:
+        user = User.find_by_email(cursor, email)
+        if user:
+            user_data = {
+                "phone_number": user.phone_number,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "email": user.email,
+                "country": user.country,
+                "state": user.state,
+                "city": user.city,
+            }
+            formatted_setting = None;
+            formatted_brokercredentials = None;
+            formatted_token = None;
+            setting = Settings.get_setting_by_userId(cursor, user.id)
+            if setting:
+                column_names = [
+                    "id", "theme_mode", "symbol", "open_order_type", "limit_price",
+                    "predefined_sl", "sl_type", "is_trailing", "predefined_target",
+                    "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
+                    "mtm_target_type", "lot_multiplier", "userId"
+                ]
+                formatted_setting = format_single_query_result(setting, column_names)
+            brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
+            if brokercredentials:
+                column_names = [
+                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId", "client_code"
+                ]
+                formatted_brokercredentials = format_query_result(brokercredentials, column_names)
+                
+            token = Token.get_token_by_user(cursor, user.id)
+            if token:
+                column_names = ["id", "interactive_token", "userId", "market_token", "interactive_url"]
+                formatted_token = format_single_query_result(token, column_names)
+                
+            return jsonify({"user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "tokens": formatted_token}), 200
+        return jsonify({"message": "Invalid credentials"}), 401
+    except Exception as e:
+        return jsonify({"message": "An error occurred during login", "error": str(e)}), 500

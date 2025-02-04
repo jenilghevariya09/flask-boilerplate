@@ -47,9 +47,13 @@ def upsert_broker():
             return error
         if session_response.get('result', {}).get('userID'):
             data['interactiveUserId'] = session_response.get('result', {}).get('userID')
+            
+        client_code = session_response.get('result', {}).get('clientCodes')
+        if client_code and client_code[0]:
+            data['client_code'] = client_code[0]
 
         # Create broker credentials
-        response = create_broker_credentials(cursor, data, market_response, host_response, session_response)
+        response = create_broker_credentials(cursor, data)
         
         mysql.connection.commit()
         return response

@@ -20,7 +20,7 @@ class Settings:
 
         # Handle missing data by replacing missing keys with default or None
         values = (
-            data.get('theme_mode', 'dark'),
+            data.get('theme_mode', 'light'),
             data.get('symbol', None),
             data.get('open_order_type', 'Market'),
             data.get('limit_price', 0),
@@ -111,7 +111,7 @@ class Settings:
     def reset_setting(cursor, userId):
     # Default values for the fields
         default_values = {
-            'theme_mode': 'dark',
+            'theme_mode': 'light',
             'symbol': None,
             'open_order_type': 'Market',
             'limit_price': 0,
@@ -182,7 +182,7 @@ class Settings:
 
         # Default values for the INSERT part, populated with None or default values
         default_values = {
-            'theme_mode': 'dark',
+            'theme_mode': 'light',
             'symbol': None,
             'open_order_type': 'Market',
             'limit_price': 0,

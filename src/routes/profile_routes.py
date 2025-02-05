@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.profile_controller import get_user_profile, update_user_profile, get_all_users, get_user_by_id
+from controllers.profile import get_user_profile, update_user_profile, get_all_users, get_user_by_id
 from models.user_model import mysql, User
 
 profile_routes = Blueprint('profile_routes', __name__)
@@ -53,12 +53,12 @@ def get_users():
         return jsonify({"message": "An error occurred while retrieving users", "error": str(e)}), 500
 
 # Get user profile by ID
-@profile_routes.route('/<int:user_id>', methods=['GET'])
+@profile_routes.route('/<int:userId>', methods=['GET'])
 @jwt_required()
-def get_user_profile(user_id):
+def get_user_by_user_id(userId):
     try:
         cursor = mysql.connection.cursor()
-        response = get_user_by_id(cursor, user_id)
+        response = get_user_by_id(cursor, userId)
         cursor.close()
         return response
     except Exception as e:

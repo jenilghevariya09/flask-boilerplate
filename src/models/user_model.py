@@ -48,8 +48,8 @@ class User:
         return User(user[0], user[1], user[2], user[3], user[4],user[5], user[6], user[7], user[8], user[9], user[10]) if user else None
 
     @staticmethod
-    def find_by_id(cursor, user_id):
-        cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    def find_by_id(cursor, userId):
+        cursor.execute("SELECT * FROM users WHERE id = %s", (userId,))
         user = cursor.fetchone()
         return User(user[0], user[1], user[2], user[3], user[4],user[5], user[6], user[7], user[8], user[9], user[10]) if user else None
 
@@ -102,7 +102,7 @@ class User:
         return cursor.fetchall()
 
     @staticmethod
-    def get_user_by_id(cursor, user_id):
+    def get_user_by_id(cursor, userId):
         query = "SELECT id, first_name, last_name, email, phone_number FROM users WHERE id = %s"
-        cursor.execute(query, (user_id,))
+        cursor.execute(query, (userId,))
         return cursor.fetchone()

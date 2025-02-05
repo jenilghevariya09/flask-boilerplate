@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from utils.auth_helpers import create_jwt_token
 from utils.commonUtils import format_query_result, format_single_query_result
 from utils.httpUtils import HTTP
-from utils.callApi import call_host_lookup_api, call_user_session_api, call_user_market_api
+from utils.get_broker import get_token
 
 http = HTTP()
 
@@ -87,32 +87,18 @@ def login_user(cursor, email, password):
                 if formatted_brokercredentials and formatted_brokercredentials[0]:
                     data = formatted_brokercredentials[0]
                     def check_error(response):
-                        if response.get('type') == 'error' or response.get('isError'):
-                            message = (response.get('result', {}).get('message') or 
-                                      response.get('description') or 
-                                      response.get('error') or 
-                                      "An error occurred")
-                            return jsonify({"message": message, "error": response}), 400
+                        if response.get('isError'):
+                            return jsonify(response), 400
                         return None
 
-                    user_market_response = call_user_market_api(cursor, data, user_data.get('id'))
-                    if (error := check_error(user_market_response)):
+                    token_response = get_token(cursor, data, user.id)
+                    if (error := check_error(token_response)):
                         return error
-                    if user_market_response.get('result', {}).get('userID'):
-                        data['marketUserId'] = user_market_response.get('result', {}).get('userID')
-                                
-                    host_lookup_response = call_host_lookup_api(data)
-
-                    user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.get('id'))
-                    if (error := check_error(user_session_response)):
-                        return error
-                    if user_session_response.get('result', {}).get('userID'):
-                        data['interactiveUserId'] = user_session_response.get('result', {}).get('userID')
-                        
-                    client_code = user_session_response.get('result', {}).get('clientCodes')
+                    
+                    client_code = token_response.get('user_session').get('result', {}).get('clientCodes')
                     if client_code and client_code[0]:
                         data['client_code'] = client_code[0]
-                    
+                        
                 token = Token.get_token_by_user(cursor, user.id)
                 if token:
                     column_names = ["id", "interactive_token", "userId", "market_token", "interactive_url"]

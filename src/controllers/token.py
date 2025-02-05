@@ -2,8 +2,7 @@ from flask import jsonify, request
 from models.broker_credentials_model import BrokerCredentials
 from models.token import Token
 from utils.commonUtils import format_query_result, format_single_query_result
-from utils.callApi import call_host_lookup_api, call_user_session_api, call_user_market_api
-
+from utils.get_broker import get_token
 
 def refresh_broker_token(cursor, user_data):
     try:
@@ -14,24 +13,16 @@ def refresh_broker_token(cursor, user_data):
             formatted_result = format_query_result(result, column_names)
             if formatted_result and formatted_result[0]:
                 data = formatted_result[0]
-                # user_market_response = call_user_market_api(cursor, data, user_data.id)
-                # if user_market_response.get('type') == 'error' or user_market_response.get('isError'):
-                #     message = (user_market_response.get('result', {}).get('message') or 
-                #           user_market_response.get('description') or 
-                #           user_market_response.get('error') or 
-                #           "An error occurred")
-                #     return jsonify({"message": message, "error": user_market_response}), 400
+                def check_error(response):
+                        if response.get('isError'):
+                            return jsonify(response), 400
+                        return None
 
-                host_lookup_response = call_host_lookup_api(data)
-
-                user_session_response = call_user_session_api(cursor, data, host_lookup_response, user_data.id)
-                if user_session_response.get('type') == 'error' or user_session_response.get('isError'):
-                    message = (user_session_response.get('result', {}).get('message') or 
-                          user_session_response.get('description') or 
-                          user_session_response.get('error') or 
-                          "An error occurred")
-                    return jsonify({"message": message, "error": user_session_response}), 400
-                client_code = user_session_response.get('result', {}).get('clientCodes')
+                token_response = get_token(cursor, data, user_data.id)
+                if (error := check_error(token_response)):
+                    return error
+                        
+                client_code = token_response.get('user_session').get('result', {}).get('clientCodes')
                 if client_code and client_code[0]:
                     data['client_code'] = client_code[0]
                     broker_updated_data = {

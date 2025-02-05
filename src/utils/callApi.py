@@ -82,3 +82,31 @@ def call_user_market_api(cursor, data, userId):
             return {"isError": True, 'error': "Empty response from server"}
     except requests.exceptions.RequestException as e:
         return {"isError": True, 'error': str(e)}
+    
+def call_multitrade_login(cursor, data, userId):
+    try:
+        connectionString = data['InteractiveUrl'] 
+        if not connectionString:
+            return {"isError": True, 'error': 'Invalid response from Host Lookup API.'}
+
+        url = connectionString + '/connect/login'
+        headers = {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Api-Version": "3"
+        }
+        
+        payload = {
+          "api_key": data['InteractiveApiKey'],
+          "api_secrets": data['InteractiveSecretKey']
+        }
+            
+        response = requests.post(url, data=payload, headers=headers)
+        resultData = response.json()
+        if resultData.get('status') == 'successful':
+            token = resultData.get('data').get('request_token')
+            if token:
+                Token.upsert_token(cursor, userId, token, None, connectionString)
+        return resultData
+    except requests.exceptions.RequestException as e:
+        print(str(e))
+        return {"isError": True, 'error': str(e)}

@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from controllers.broker_credentials import create_broker_credentials, get_broker_credentials, update_broker_credentials, delete_broker_credentials, get_broker_credentials_by_user
 from models.user_model import mysql, User
-from utils.callApi import call_host_lookup_api, call_user_session_api, call_user_market_api
+from utils.get_broker import get_token
 
 broker_credentials_routes = Blueprint('broker_credentials_routes', __name__)
 
@@ -21,34 +21,24 @@ def upsert_broker():
         user = User.find_by_email(cursor, email)
         data['userId'] = user.id
         
-        # Helper function to handle API errors
         def check_error(response):
-            if response.get('type') == 'error' or response.get('isError'):
-                message = (response.get('result', {}).get('message') or 
-                          response.get('description') or 
-                          response.get('error') or 
-                          "An error occurred")
-                return jsonify({"message": message, "error": response}), 400
+            if response.get('isError'):
+                return jsonify(response), 400
             return None
 
-        # User Market API
-        market_response = call_user_market_api(cursor, data, user.id)
-        if (error := check_error(market_response)):
+        token_response = get_token(cursor, data, user.id)
+        if (error := check_error(token_response)):
             return error
-        if market_response.get('result', {}).get('userID'):
-            data['marketUserId'] = market_response.get('result', {}).get('userID')
 
-        # Host Lookup API
-        host_response = call_host_lookup_api(data)
-
-        # User Session API
-        session_response = call_user_session_api(cursor, data, host_response, user.id)
-        if (error := check_error(session_response)):
-            return error
-        if session_response.get('result', {}).get('userID'):
-            data['interactiveUserId'] = session_response.get('result', {}).get('userID')
+        market_userId = token_response.get('market_data').get('result', {}).get('userID') 
+        if market_userId:
+            data['marketUserId'] = market_userId
             
-        client_code = session_response.get('result', {}).get('clientCodes')
+        interactive_userId = token_response.get('user_session').get('result', {}).get('userID') 
+        if interactive_userId:
+            data['interactiveUserId'] = interactive_userId
+        
+        client_code = token_response.get('user_session').get('result', {}).get('clientCodes')
         if client_code and client_code[0]:
             data['client_code'] = client_code[0]
 

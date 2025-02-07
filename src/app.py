@@ -31,11 +31,11 @@ jwt = JWTManager(app)
 http = HTTP()
 
 # Register routes
-app.register_blueprint(auth_routes, url_prefix='/auth')
-app.register_blueprint(profile_routes, url_prefix='/user')
-app.register_blueprint(broker_credentials_routes, url_prefix='/brokercredentials')
-app.register_blueprint(settings_routes, url_prefix='/settings')
-app.register_blueprint(token_routes, url_prefix='/broker_token')
+app.register_blueprint(auth_routes, url_prefix='./tradepi/auth')
+app.register_blueprint(profile_routes, url_prefix='/tradepi/user')
+app.register_blueprint(broker_credentials_routes, url_prefix='/tradepi/brokercredentials')
+app.register_blueprint(settings_routes, url_prefix='/tradepi/settings')
+app.register_blueprint(token_routes, url_prefix='/tradepi/broker_token')
 
 @app.errorhandler(NoAuthorizationError)
 def handle_no_authorization_error(error):
@@ -76,7 +76,7 @@ def handle_exception(error):
     return jsonify(response), 500
 
 # Route for root URL
-@app.route('/')
+@app.route('/tradepi')
 def welcome():
     return jsonify({"message": "Welcome to TradePi"})
 

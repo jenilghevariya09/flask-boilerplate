@@ -31,7 +31,7 @@ jwt = JWTManager(app)
 http = HTTP()
 
 # Register routes
-app.register_blueprint(auth_routes, url_prefix='./tradepi/auth')
+app.register_blueprint(auth_routes, url_prefix='/tradepi/auth')
 app.register_blueprint(profile_routes, url_prefix='/tradepi/user')
 app.register_blueprint(broker_credentials_routes, url_prefix='/tradepi/brokercredentials')
 app.register_blueprint(settings_routes, url_prefix='/tradepi/settings')

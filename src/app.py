@@ -12,7 +12,9 @@ import logging
 import os
 # Request
 from utils.httpUtils import HTTP
+from dotenv import load_dotenv
 
+load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 

@@ -13,6 +13,10 @@ def decode_auth_token(auth_token):
 def create_jwt_token(identity):
     now = datetime.datetime.now()
     tomorrow_2am = now.replace(hour=2, minute=0, second=0, microsecond=0)
+    # If the current time is after 2 AM, set the expiration to 2 AM the next day
+    if now > tomorrow_2am:
+        tomorrow_2am += datetime.timedelta(days=1)
+    
     expires_delta = tomorrow_2am - now
     access_token = create_access_token(identity=identity, expires_delta=expires_delta)
     return access_token

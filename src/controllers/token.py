@@ -13,6 +13,9 @@ def refresh_broker_token(cursor, user_data):
             formatted_result = format_query_result(result, column_names)
             if formatted_result and formatted_result[0]:
                 data = formatted_result[0]
+                brokerType = data.get('brokerServer')
+                if brokerType == 'Upstox':
+                    return jsonify({"brokercredentials": data, "brokerType": brokerType}), 200
                 def check_error(response):
                         if response.get('isError'):
                             return jsonify(response), 400

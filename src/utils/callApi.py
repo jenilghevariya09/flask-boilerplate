@@ -44,6 +44,8 @@ def call_user_session_api(cursor, data, host_lookup_response, userId):
             payload['uniqueKey'] = uniqueKey
             
         response = requests.post(url, headers=headers, json=payload)
+        if response.status_code == 404:
+            return {"isError": True, 'error': "Interactive Data Resource not found (404)"}
         resultData = response.json()
         if resultData.get('type') == 'success':
             token = resultData.get('result').get('token')
@@ -67,7 +69,7 @@ def call_user_market_api(cursor, data, userId):
         }
         response = requests.post(url, headers=headers, json=payload)
         if response.status_code == 404:
-            return {"isError": True, 'error': "Resource not found (404)"}
+            return {"isError": True, 'error': "Market Data Resource not found (404)"}
         
         if response.content:
             resultData = response.json()
@@ -101,6 +103,8 @@ def call_multitrade_login(cursor, data, userId):
         }
             
         response = requests.post(url, data=payload, headers=headers)
+        if response.status_code == 404:
+            return {"isError": True, 'error': "Interactive Data Resource not found (404)"}
         resultData = response.json()
         if resultData.get('status') == 'successful':
             token = resultData.get('data').get('request_token')

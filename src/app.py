@@ -12,7 +12,9 @@ import logging
 import os
 # Request
 from utils.httpUtils import HTTP
+from dotenv import load_dotenv
 
+load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -31,11 +33,11 @@ jwt = JWTManager(app)
 http = HTTP()
 
 # Register routes
-app.register_blueprint(auth_routes, url_prefix='/auth')
-app.register_blueprint(profile_routes, url_prefix='/user')
-app.register_blueprint(broker_credentials_routes, url_prefix='/brokercredentials')
-app.register_blueprint(settings_routes, url_prefix='/settings')
-app.register_blueprint(token_routes, url_prefix='/broker_token')
+app.register_blueprint(auth_routes, url_prefix='/tradepi/auth')
+app.register_blueprint(profile_routes, url_prefix='/tradepi/user')
+app.register_blueprint(broker_credentials_routes, url_prefix='/tradepi/brokercredentials')
+app.register_blueprint(settings_routes, url_prefix='/tradepi/settings')
+app.register_blueprint(token_routes, url_prefix='/tradepi/broker_token')
 
 @app.errorhandler(NoAuthorizationError)
 def handle_no_authorization_error(error):
@@ -56,15 +58,15 @@ def handle_invalid_token(err_msg):
 # Error handling
 @app.errorhandler(404)
 def not_found(error):
-    return jsonify({"message": 'Not Found', "error": error}), 404
+    return jsonify({"message": 'Not Found', "error": str(error)}), 404
 
 @app.errorhandler(400)
 def bad_request(error):
-    return jsonify({"message": 'Bad Request', "error": error}), 400
+    return jsonify({"message": 'Bad Request', "error": str(error)}), 400
 
 @app.errorhandler(500)
 def internal_error(error):
-    return jsonify({"message": 'Internal Server Error', "error": error}), 500
+    return jsonify({"message": 'Internal Server Error', "error": str(error)}), 500
 
 # Global error handler for SQL exceptions
 @app.errorhandler(Exception)
@@ -75,7 +77,10 @@ def handle_exception(error):
     }
     return jsonify(response), 500
 
-    # Check if the database is connected
+# Route for root URL
+@app.route('/tradepi')
+def welcome():
+    return jsonify({"message": "Welcome to TradePi"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host='0.0.0.0', port=5000)

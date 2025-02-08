@@ -105,7 +105,8 @@ def call_multitrade_login(cursor, data, userId):
         if resultData.get('status') == 'successful':
             token = resultData.get('data').get('request_token')
             if token:
-                Token.upsert_token(cursor, userId, token, None, connectionString)
+                secretToken = data['InteractiveApiKey'] + ':' + token
+                Token.upsert_token(cursor, userId, secretToken, None, connectionString)
         return resultData
     except requests.exceptions.RequestException as e:
         print(str(e))

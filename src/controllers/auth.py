@@ -75,13 +75,8 @@ def login_user(cursor, email, password):
                 ]
                 formatted_setting = format_single_query_result(setting, column_names)
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
-            host_lookup_response = None
-            user_market_response = None
-            user_session_response = None
             if brokercredentials:
-                column_names = [
-                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId", "client_code"
-                ]
+                column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId", "client_code"]
                 formatted_brokercredentials = format_query_result(brokercredentials, column_names)
                 
                 if formatted_brokercredentials and formatted_brokercredentials[0]:

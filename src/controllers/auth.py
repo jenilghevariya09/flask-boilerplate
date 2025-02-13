@@ -32,14 +32,14 @@ def register_user(cursor, data):
                 "state": user.state,
                 "city": user.city,
             }
-            Settings.upsert_setting(cursor, {"userId": user.id, "theme_mode" : 'light'})
+            Settings.upsert_setting(cursor, {"userId": user.id, "theme_mode" : 'light', "symbol": "NIFTY"})
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
                 column_names = [
                     "id", "theme_mode", "symbol", "open_order_type", "limit_price",
                     "predefined_sl", "sl_type", "is_trailing", "predefined_target",
                     "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                    "mtm_target_type", "lot_multiplier", "userId"
+                    "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
                 ]
                 formatted_setting = format_single_query_result(setting, column_names)
         return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting,}), 200
@@ -71,7 +71,7 @@ def login_user(cursor, email, password):
                     "id", "theme_mode", "symbol", "open_order_type", "limit_price",
                     "predefined_sl", "sl_type", "is_trailing", "predefined_target",
                     "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                    "mtm_target_type", "lot_multiplier", "userId"
+                    "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
                 ]
                 formatted_setting = format_single_query_result(setting, column_names)
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
@@ -139,7 +139,7 @@ def preload_data(cursor, email):
                     "id", "theme_mode", "symbol", "open_order_type", "limit_price",
                     "predefined_sl", "sl_type", "is_trailing", "predefined_target",
                     "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                    "mtm_target_type", "lot_multiplier", "userId"
+                    "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
                 ]
                 formatted_setting = format_single_query_result(setting, column_names)
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)

@@ -62,6 +62,7 @@ def login_user(cursor, email, password):
                 "state": user.state,
                 "city": user.city,
             }
+            brokerType = None
             formatted_setting = None
             formatted_brokercredentials = None
             formatted_token = None
@@ -81,6 +82,9 @@ def login_user(cursor, email, password):
                 
                 if formatted_brokercredentials and formatted_brokercredentials[0]:
                     data = formatted_brokercredentials[0]
+                    brokerType = data.get('brokerServer')
+                    if brokerType == 'Upstox':
+                        return jsonify({"access_token": access_token, "user_data": user_data, "broker_type": brokerType, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials}), 200
                     def check_error(response):
                         if response.get('isError'):
                             return jsonify(response), 400

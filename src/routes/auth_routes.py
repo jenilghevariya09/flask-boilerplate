@@ -30,6 +30,7 @@ def login():
         password = data.get('password')
         cursor = mysql.connection.cursor()
         response = login_user(cursor, email, password)
+        mysql.connection.commit()
         cursor.close()
 
         return response

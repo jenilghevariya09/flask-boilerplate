@@ -4,6 +4,7 @@ from flask_cors import CORS
 from routes.auth_routes import auth_routes
 from routes.profile_routes import profile_routes
 from routes.broker_credentials_routes import broker_credentials_routes
+from routes.orders_routes import orders_routes
 from routes.settings_routes import settings_routes
 from routes.token_routes import token_routes
 from models.user_model import init_app
@@ -36,6 +37,7 @@ http = HTTP()
 app.register_blueprint(auth_routes, url_prefix='/tradepi/auth')
 app.register_blueprint(profile_routes, url_prefix='/tradepi/user')
 app.register_blueprint(broker_credentials_routes, url_prefix='/tradepi/brokercredentials')
+app.register_blueprint(orders_routes, url_prefix='/tradepi/orders')
 app.register_blueprint(settings_routes, url_prefix='/tradepi/settings')
 app.register_blueprint(token_routes, url_prefix='/tradepi/broker_token')
 

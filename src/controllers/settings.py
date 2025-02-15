@@ -22,7 +22,7 @@ def get_setting_by_userId(cursor, userId):
                 "id", "theme_mode", "symbol", "open_order_type", "limit_price",
                 "predefined_sl", "sl_type", "is_trailing", "predefined_target",
                 "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
+                "mtm_target_type", "lot_multiplier", "is_hedge", "userId" , "isPaperMode"
             ]
             formatted_setting = format_single_query_result(setting, column_names)
             return jsonify(formatted_setting), 200
@@ -49,13 +49,9 @@ def upsert_setting(cursor, data):
         Settings.upsert_setting(cursor, data)
         setting = Settings.get_setting_by_userId(cursor, data['userId'])
         if setting:
-            column_names = [
-                "id", "theme_mode", "symbol", "open_order_type", "limit_price",
-                "predefined_sl", "sl_type", "is_trailing", "predefined_target",
-                "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
-            ]
-            formatted_setting = format_single_query_result(setting, column_names)
+            column_names = [desc[0] for desc in cursor.description]
+            formatted_setting = dict(zip(column_names, setting))
+            print("is" , formatted_setting)
             return jsonify(formatted_setting), 200
         return jsonify({"message": "Operation completed successfully"}), 200
     except Exception as e:

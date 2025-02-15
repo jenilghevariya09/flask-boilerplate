@@ -14,8 +14,8 @@ class Settings:
                 theme_mode, symbol, open_order_type, limit_price, 
                 predefined_sl, sl_type, is_trailing, predefined_target, 
                 target_type, predefined_mtm_sl, mtm_sl_type, 
-                predefined_mtm_target, mtm_target_type, lot_multiplier, is_hedge, userId, deleted
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                predefined_mtm_target, mtm_target_type, lot_multiplier, is_hedge, userId, deleted , isPaperMode
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         # Handle missing data by replacing missing keys with default or None
@@ -37,6 +37,7 @@ class Settings:
             int(data.get('is_hedge', 1)),
             data.get('userId'),
             int(data.get('deleted', None)),
+            int(data.get('isPaperMode', 0)),  # Added isPaperMode with default value False (0)
         )
 
         cursor.execute(query, values)
@@ -98,6 +99,9 @@ class Settings:
         if 'is_hedge' in data:
             fields.append("is_hedge = %s")
             values.append(data['is_hedge'])
+        if 'isPaperMode' in data:
+            fields.append("isPaperMode = %s")
+            values.append(data['isPaperMode'])
 
         # Ensure we have fields to update
         if not fields:
@@ -130,6 +134,7 @@ class Settings:
             'mtm_target_type': 'Points',
             'lot_multiplier': 1,
             'is_hedge': 1,
+            'isPaperMode': 0,
         }
         
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -161,7 +166,7 @@ class Settings:
             'theme_mode', 'symbol', 'open_order_type', 'limit_price', 
             'predefined_sl', 'sl_type', 'is_trailing', 'predefined_target', 
             'target_type', 'predefined_mtm_sl', 'mtm_sl_type', 
-            'predefined_mtm_target', 'mtm_target_type', 'lot_multiplier', 'is_hedge'
+            'predefined_mtm_target', 'mtm_target_type', 'lot_multiplier', 'is_hedge','isPaperMode'
         ]
 
         # Filter the data to only include keys that are allowed fields
@@ -202,6 +207,7 @@ class Settings:
             'mtm_target_type': 'Points',
             'lot_multiplier': 1,
             'is_hedge': 1,
+            'isPaperMode' : 0
         }
 
         # Prepare the values for the INSERT part

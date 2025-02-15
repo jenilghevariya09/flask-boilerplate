@@ -35,18 +35,7 @@ def get_orders(cursor , user_id):
     try:
         result = Orders.get_orders(cursor , user_id)
         if result:
-            return jsonify(result), 200
+            return jsonify({"data":result,"message": 'Operation Executed Successfully'}), 200
         return jsonify({"message": "Orders not found"}), 404
     except Exception as e:
         return jsonify({"message": "An error occurred while retrieving BrokerCredentials", "error": str(e)}), 500
-
-    try:
-        result = BrokerCredentials.get_broker_credentials_by_user(cursor, userId)
-        if result:
-            column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId", "client_code"]
-            formatted_result = format_query_result(result, column_names)
-            if formatted_result and formatted_result[0]:
-                return jsonify({"data":formatted_result[0],"message": 'Operation Executed Successfully'}), 200
-        return jsonify({"message": "No BrokerCredentials data found for this user"}), 404
-    except Exception as e:
-        return jsonify({"message": "An error occurred while retrieving BrokerCredentials data", "error": str(e)}), 500

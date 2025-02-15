@@ -9,6 +9,7 @@ from routes.settings_routes import settings_routes
 from routes.token_routes import token_routes
 from models.user_model import init_app
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from socket_manager import socketio  # Import socket instance
 import logging
 import os
 # Request
@@ -18,7 +19,7 @@ from dotenv import load_dotenv
 load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
-
+socketio.init_app(app)
 # Configurations
 app.config.from_object('config.Config')
 
@@ -85,4 +86,4 @@ def welcome():
     return jsonify({"message": "Welcome to TradePi"})
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    socketio.run(app ,debug=False, host='0.0.0.0', port=5000)

@@ -1,7 +1,7 @@
 from flask import jsonify
 from flask_mysqldb import MySQL
 from datetime import datetime
-
+from socket_manager import emit_order_to_user  # Import function
 mysql = MySQL()
 
 class Orders:
@@ -41,8 +41,14 @@ class Orders:
             )
 
             cursor.execute(query, values)
-            return cursor.lastrowid  # Returns last inserted/updated order ID
-
+            order_id = cursor.lastrowid  
+        # Fetch the latest order details
+            cursor.execute("SELECT * FROM orders WHERE order_id = %s", (order_id,))
+            new_order = cursor.fetchone()
+            column_names = [desc[0] for desc in cursor.description]
+            new_order = dict(zip(column_names, new_order))
+            emit_order_to_user(user_id, new_order)
+            return order_id
         except Exception as e:
             print("Error while inserting/updating order:", str(e))
             return None
@@ -60,52 +66,3 @@ class Orders:
         orders = [dict(zip(column_names, row)) for row in rows]
 
         return orders
-
-    @staticmethod
-    def update_broker_credentials(cursor, broker_id, data):
-        query = """
-            UPDATE brokercredentials
-            SET brokerServer = %s, MarketApiKey = %s, MarketSecretKey = %s,
-                InteractiveApiKey = %s, InteractiveSecretKey = %s, MarketUrl = %s, InteractiveUrl = %s, interactiveUserId = %s, marketUserId = %s, client_code = %s deleted = NULL
-            WHERE id = %s
-        """
-        cursor.execute(query, (data['brokerServer'], data['MarketApiKey'], data['MarketSecretKey'],
-                               data['InteractiveApiKey'], data['InteractiveSecretKey'], data['MarketUrl'], data['InteractiveUrl'], data['interactiveUserId'], data['marketUserId'], data['client_code'], None, broker_id))
-        
-    @staticmethod
-    def delete_broker_credentials(cursor, broker_id):
-        # Default values for the fields
-        default_values = {
-            'brokerServer': None,
-            'MarketApiKey': None,
-            'MarketSecretKey': None,
-            'InteractiveApiKey': None,
-            'InteractiveSecretKey': None,
-            'MarketUrl': None,
-            'InteractiveUrl': None,
-            'interactiveUserId': None,
-            'marketUserId': None,
-            'client_code': None,
-        }   
-
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # Construct the UPDATE query to set each column to its default value
-        set_clause = ', '.join(f"{key} = %s" for key in default_values)
-
-        query = f"""
-            UPDATE brokercredentials
-            SET {set_clause}, deleted = %s
-            WHERE id = %s
-        """ 
-
-        # Prepare the values to update, including 'deleted' as 1 and default values for all fields
-        values = tuple(default_values[key] for key in default_values) + (current_time, broker_id,)    
-
-        # Execute the query
-        cursor.execute(query, values)
-
-    @staticmethod
-    def get_broker_credentials_by_user(cursor, userId):
-        query = "SELECT * FROM brokercredentials WHERE userId = %s AND deleted IS NULL"
-        cursor.execute(query, (userId,))
-        return cursor.fetchall()

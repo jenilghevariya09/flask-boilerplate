@@ -97,12 +97,33 @@ class User:
 
     @staticmethod
     def get_all_users(cursor):
-        query = "SELECT id, first_name, last_name, email, phone_number FROM users"
+        query = "SELECT * FROM users"
         cursor.execute(query)
-        return cursor.fetchall()
+        rows = cursor.fetchall()
+        column_names = [desc[0] for desc in cursor.description]
+        
+        users = [dict(zip(column_names, row)) for row in rows]
+        return users
 
     @staticmethod
     def get_user_by_id(cursor, userId):
-        query = "SELECT id, first_name, last_name, email, phone_number FROM users WHERE id = %s"
+        query = "SELECT * FROM users WHERE id = %s"
         cursor.execute(query, (userId,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        if row:
+            column_names = [desc[0] for desc in cursor.description]
+            user = dict(zip(column_names, row))
+            return user
+        return None
+
+    @staticmethod
+    def get_user_by_email(cursor, email):
+        query = "SELECT * FROM users WHERE email = %s"
+        cursor.execute(query, (email,))
+        row = cursor.fetchone()
+        if row:
+            column_names = [desc[0] for desc in cursor.description]
+            user = dict(zip(column_names, row))
+            return user
+        return None
+    

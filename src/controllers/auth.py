@@ -9,6 +9,7 @@ from utils.auth_helpers import create_jwt_token
 from utils.commonUtils import format_query_result, format_single_query_result
 from utils.httpUtils import HTTP
 from utils.get_broker import get_token
+from constant.constant import SETTING_COLUMN, TOKEN_COLUMN, BROKER_COLUMN
 
 http = HTTP()
 
@@ -35,13 +36,7 @@ def register_user(cursor, data):
             Settings.upsert_setting(cursor, {"userId": user.id, "theme_mode" : 'light', "symbol": "NIFTY"})
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
-                column_names = [
-                    "id", "theme_mode", "symbol", "open_order_type", "limit_price",
-                    "predefined_sl", "sl_type", "is_trailing", "predefined_target",
-                    "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                    "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
-                ]
-                formatted_setting = format_single_query_result(setting, column_names)
+                formatted_setting = format_single_query_result(setting, SETTING_COLUMN)
         return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting,}), 200
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500
@@ -66,19 +61,13 @@ def login_user(cursor, email, password):
             formatted_setting = None
             formatted_brokercredentials = None
             formatted_token = None
+            Settings.upsert_setting(cursor, {"userId": user.id, "predefined_mtm_sl" : None, "predefined_mtm_target" : None})
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
-                column_names = [
-                    "id", "theme_mode", "symbol", "open_order_type", "limit_price",
-                    "predefined_sl", "sl_type", "is_trailing", "predefined_target",
-                    "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                    "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
-                ]
-                formatted_setting = format_single_query_result(setting, column_names)
+                formatted_setting = format_single_query_result(setting, SETTING_COLUMN)
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
             if brokercredentials:
-                column_names = ["id", "brokerServer", "MarketApiKey", "MarketSecretKey","InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId", "client_code"]
-                formatted_brokercredentials = format_query_result(brokercredentials, column_names)
+                formatted_brokercredentials = format_query_result(brokercredentials, BROKER_COLUMN)
                 
                 if formatted_brokercredentials and formatted_brokercredentials[0]:
                     data = formatted_brokercredentials[0]
@@ -100,8 +89,7 @@ def login_user(cursor, email, password):
                         
                 token = Token.get_token_by_user(cursor, user.id)
                 if token:
-                    column_names = ["id", "interactive_token", "userId", "market_token", "interactive_url"]
-                    formatted_token = format_single_query_result(token, column_names)
+                    formatted_token = format_single_query_result(token, TOKEN_COLUMN)
                     
             return jsonify({"access_token": access_token, "user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "token": formatted_token}), 200
         return jsonify({"message": "Invalid credentials"}), 401
@@ -139,24 +127,14 @@ def preload_data(cursor, email):
             formatted_token = None;
             setting = Settings.get_setting_by_userId(cursor, user.id)
             if setting:
-                column_names = [
-                    "id", "theme_mode", "symbol", "open_order_type", "limit_price",
-                    "predefined_sl", "sl_type", "is_trailing", "predefined_target",
-                    "target_type", "predefined_mtm_sl", "mtm_sl_type", "predefined_mtm_target",
-                    "mtm_target_type", "lot_multiplier", "is_hedge", "userId"
-                ]
-                formatted_setting = format_single_query_result(setting, column_names)
+                formatted_setting = format_single_query_result(setting, SETTING_COLUMN)
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
             if brokercredentials:
-                column_names = [
-                    "id", "brokerServer", "MarketApiKey", "MarketSecretKey", "InteractiveApiKey", "InteractiveSecretKey", "MarketUrl", "InteractiveUrl", "userId", "interactiveUserId", "marketUserId", "client_code"
-                ]
-                formatted_brokercredentials = format_query_result(brokercredentials, column_names)
+                formatted_brokercredentials = format_query_result(brokercredentials, BROKER_COLUMN)
                 
             token = Token.get_token_by_user(cursor, user.id)
             if token:
-                column_names = ["id", "interactive_token", "userId", "market_token", "interactive_url"]
-                formatted_token = format_single_query_result(token, column_names)
+                formatted_token = format_single_query_result(token, TOKEN_COLUMN)
                 
             return jsonify({"user_data": user_data, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "tokens": formatted_token}), 200
         return jsonify({"message": "Invalid credentials"}), 401

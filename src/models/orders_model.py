@@ -9,50 +9,76 @@ class Orders:
     @staticmethod
     def create_order(cursor, user_id, order_data):
         try:
-            query = """
-                INSERT INTO orders (
-                    order_id, userid, instrument_token, exchange, transaction_type, quantity, 
-                    validity, order_type, price, tag, status
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE
-                    instrument_token = VALUES(instrument_token),
-                    exchange = VALUES(exchange),
-                    transaction_type = VALUES(transaction_type),
-                    quantity = VALUES(quantity),
-                    validity = VALUES(validity),
-                    order_type = VALUES(order_type),
-                    price = VALUES(price),
-                    tag = VALUES(tag),
-                    status = VALUES(status)
-            """
-            
-            values = (
-                order_data.get("order_id", None),  # Use order_id if provided, else None
-                user_id,
-                order_data["instrument_token"],
-                order_data["exchange"],
-                order_data["transaction_type"],
-                order_data["quantity"],
-                order_data["validity"],
-                order_data["order_type"],
-                order_data["price"],
-                order_data["tag"],
-                order_data["status"]
-            )
+            if 'order_id' in order_data:
+                # If 'order_id' is provided, update the existing order with provided keys
+                # Build the dynamic SET clause based on the provided keys
+                set_clause = []
+                values = []
 
-            cursor.execute(query, values)
-            order_id = cursor.lastrowid  
-        # Fetch the latest order details
-            cursor.execute("SELECT * FROM orders WHERE order_id = %s", (order_id,))
-            new_order = cursor.fetchone()
-            column_names = [desc[0] for desc in cursor.description]
-            new_order = dict(zip(column_names, new_order))
-            emit_order_to_user(user_id, new_order)
-            return order_id
+                for key, value in order_data.items():
+                    if key != "order_id":  # Don't include order_id in the SET clause
+                        set_clause.append(f"{key} = %s")
+                        values.append(value)
+
+                # If no valid keys are passed for update, return None
+                if not set_clause:
+                    return None
+
+                # Add the order_id at the end of the values for the WHERE clause
+                set_clause_str = ", ".join(set_clause)
+                query = f"""
+                    UPDATE orders
+                    SET {set_clause_str}
+                    WHERE order_id = %s
+                """
+                values.append(order_data['order_id'])
+
+                cursor.execute(query, tuple(values))
+                cursor.connection.commit()  # Commit the transaction
+                order_id = order_data['order_id']  # Fetch the last inserted order_id
+                cursor.execute("SELECT * FROM orders WHERE order_id = %s", (order_id,))
+                new_order = cursor.fetchone()
+                column_names = [desc[0] for desc in cursor.description]
+                new_order = dict(zip(column_names, new_order))
+                emit_order_to_user(user_id, new_order)
+                return order_id
+
+            else:
+                # If 'order_id' is not provided, create a new order
+                query = """
+                    INSERT INTO orders (
+                        userid, instrument_token, exchange, transaction_type, quantity, 
+                        validity, order_type, price, tag, status, average_price, order_timestamp
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                values = (
+                    user_id,
+                    order_data.get("instrument_token", None),
+                    order_data.get("exchange", None),
+                    order_data.get("transaction_type", None),
+                    order_data.get("quantity", None),
+                    order_data.get("validity", None),
+                    order_data.get("order_type", None),
+                    order_data.get("price", None),
+                    order_data.get("tag", None),
+                    order_data["status"],
+                    order_data.get("average_price", None),
+                    order_data.get("order_timestamp", None),
+                )
+
+                cursor.execute(query, values)
+                cursor.connection.commit()  # Commit the transaction
+                order_id = cursor.lastrowid  # Fetch the last inserted order_id
+                cursor.execute("SELECT * FROM orders WHERE order_id = %s", (order_id,))
+                new_order = cursor.fetchone()
+                column_names = [desc[0] for desc in cursor.description]
+                new_order = dict(zip(column_names, new_order))
+                emit_order_to_user(user_id, new_order)
+                return order_id
+
         except Exception as e:
             print("Error while inserting/updating order:", str(e))
             return None
-
     @staticmethod
     def get_orders(cursor, user_id):
         query = "SELECT * FROM orders WHERE userid = %s"

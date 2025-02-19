@@ -11,8 +11,7 @@ def create_order(cursor, user_id, order_data):
     try:
         # Required fields
         required_fields = {
-            "instrument_token", "exchange", "transaction_type",
-            "quantity", "validity", "order_type", "price", "tag", "status"
+             "status"
         }
         
         # Check if all required fields are present

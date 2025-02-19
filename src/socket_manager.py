@@ -1,22 +1,37 @@
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO , disconnect
 from flask import request
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity , decode_token
 from models.user_model import mysql, User
 
-socketio = SocketIO(cors_allowed_origins="*", async_mode="threading")  # Initialize socket
+socketio = SocketIO(cors_allowed_origins="*")  # Initialize socket
 connected_users = {}  # Dictionary to store userId -> socketId mapping
 
 @socketio.on("connect")
-@jwt_required()
 def handle_connect():
-        email = get_jwt_identity()
+    """Authenticate user via JWT token in query parameters"""
+    token = request.args.get("token")  # Extract token from query string
+    if not token:
+        print("No token provided, disconnecting")
+        disconnect()
+        return
+
+    try:
+        decoded_token = decode_token(token)
+        email = decoded_token["sub"]  # Extract user email from token
+
         cursor = mysql.connection.cursor()
-        # Get user details
-        user = User.find_by_email(cursor, email)
+        user = User.find_by_email(cursor, email)  # Find user in DB
         if not user:
-            return jsonify({"message": "User not found"}), 404
-        connected_users[user.id] = request.sid  # Store the user's socket session
-        print(f"User {user.id} registered with session {request.sid}")
+            disconnect()
+            return
+        
+        connected_users[user.id] = request.sid
+        print(f"User {user.id} authenticated with session {request.sid}")
+
+    except Exception as e:
+        print("Auth failed:", str(e))
+        disconnect()
+
 
 @socketio.on("disconnect")
 def handle_disconnect():

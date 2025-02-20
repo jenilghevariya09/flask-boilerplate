@@ -14,14 +14,14 @@ class Settings:
                 theme_mode, symbol, open_order_type, limit_price, 
                 predefined_sl, sl_type, is_trailing, predefined_target, 
                 target_type, predefined_mtm_sl, mtm_sl_type, 
-                predefined_mtm_target, mtm_target_type, lot_multiplier, userId, deleted
+                predefined_mtm_target, mtm_target_type, lot_multiplier, is_hedge, userId, deleted
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
 
         # Handle missing data by replacing missing keys with default or None
         values = (
             data.get('theme_mode', 'light'),
-            data.get('symbol', None),
+            data.get('symbol', 'NIFTY'),
             data.get('open_order_type', 'Market'),
             data.get('limit_price', 0),
             data.get('predefined_sl', None),
@@ -34,6 +34,7 @@ class Settings:
             data.get('predefined_mtm_target', None),
             data.get('mtm_target_type', 'Points'),
             int(data.get('lot_multiplier', 1)),
+            int(data.get('is_hedge', 1)),
             data.get('userId'),
             int(data.get('deleted', None)),
         )
@@ -94,6 +95,9 @@ class Settings:
         if 'lot_multiplier' in data:
             fields.append("lot_multiplier = %s")
             values.append(data['lot_multiplier'])
+        if 'is_hedge' in data:
+            fields.append("is_hedge = %s")
+            values.append(data['is_hedge'])
 
         # Ensure we have fields to update
         if not fields:
@@ -125,6 +129,7 @@ class Settings:
             'predefined_mtm_target': None,
             'mtm_target_type': 'Points',
             'lot_multiplier': 1,
+            'is_hedge': 1,
         }
         
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -156,7 +161,7 @@ class Settings:
             'theme_mode', 'symbol', 'open_order_type', 'limit_price', 
             'predefined_sl', 'sl_type', 'is_trailing', 'predefined_target', 
             'target_type', 'predefined_mtm_sl', 'mtm_sl_type', 
-            'predefined_mtm_target', 'mtm_target_type', 'lot_multiplier'
+            'predefined_mtm_target', 'mtm_target_type', 'lot_multiplier', 'is_hedge'
         ]
 
         # Filter the data to only include keys that are allowed fields
@@ -183,7 +188,7 @@ class Settings:
         # Default values for the INSERT part, populated with None or default values
         default_values = {
             'theme_mode': 'light',
-            'symbol': None,
+            'symbol': 'NIFTY',
             'open_order_type': 'Market',
             'limit_price': 0,
             'predefined_sl': None,
@@ -196,6 +201,7 @@ class Settings:
             'predefined_mtm_target': None,
             'mtm_target_type': 'Points',
             'lot_multiplier': 1,
+            'is_hedge': 1,
         }
 
         # Prepare the values for the INSERT part

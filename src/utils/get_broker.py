@@ -69,6 +69,14 @@ BROKER_HANDLERS = {
         "is_host_lookup": True,
         "check_error": check_error
     },
+    "XTS-JMFinance": {
+        'marketUrl': 'https://smartapi.jmfonline.in/apimarketdata',
+        'interactiveUrl': 'https://smartapi.jmfonline.in/interactive',
+        "market": call_user_market_api,
+        "interactive": call_user_session_api,
+        "is_host_lookup": True,
+        "check_error": check_error
+    },
     "XTS-Multitrade": {
         'marketUrl': 'https://wss1.mtsp.co.in:15207',
         'interactiveUrl': 'https://wss1.mtsp.co.in:15207',

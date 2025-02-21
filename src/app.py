@@ -6,6 +6,7 @@ from routes.profile_routes import profile_routes
 from routes.broker_credentials_routes import broker_credentials_routes
 from routes.settings_routes import settings_routes
 from routes.token_routes import token_routes
+from routes.payment_routes import payment_routes
 from models.user_model import init_app
 from flask_jwt_extended.exceptions import NoAuthorizationError
 import logging
@@ -38,6 +39,7 @@ app.register_blueprint(profile_routes, url_prefix='/tradepi/user')
 app.register_blueprint(broker_credentials_routes, url_prefix='/tradepi/brokercredentials')
 app.register_blueprint(settings_routes, url_prefix='/tradepi/settings')
 app.register_blueprint(token_routes, url_prefix='/tradepi/broker_token')
+app.register_blueprint(payment_routes, url_prefix='/tradepi/payment')
 
 @app.errorhandler(NoAuthorizationError)
 def handle_no_authorization_error(error):

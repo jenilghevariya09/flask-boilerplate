@@ -36,9 +36,10 @@ def register_user(cursor, data):
 
 def login_user(cursor, email, password):
     try:
-        user = User.get_user_by_email(cursor, email)
-        if user and bcrypt.check_password_hash(user.get('password'), password):
-            access_token = create_jwt_token(identity=user.get('email'))
+        user_detail = User.find_by_email(cursor, email)
+        if user_detail and bcrypt.check_password_hash(user_detail.password, password):
+            access_token = create_jwt_token(identity=user_detail.email)
+            user = User.get_user_by_email(cursor, email)
             brokerType = None
             formatted_setting = None
             formatted_brokercredentials = None

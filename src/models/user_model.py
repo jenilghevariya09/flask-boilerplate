@@ -55,44 +55,22 @@ class User:
 
     @staticmethod
     def update_profile(cursor, userId, data):
-        query = "UPDATE users SET "
+        updatable_fields = ['first_name', 'last_name', 'email', 'phone_number', 'country', 'state', 'city']
         fields = []
         values = []
 
-        if 'first_name' in data:
-            fields.append("first_name = %s")
-            values.append(data['first_name'])
-        if 'last_name' in data:
-            fields.append("last_name = %s")
-            values.append(data['last_name'])
-        if 'email' in data:
-            fields.append("email = %s")
-            values.append(data['email'])
-        if 'phone_number' in data:
-            fields.append("phone_number = %s")
-            values.append(data['phone_number'])
-        if 'country' in data:
-            fields.append("country = %s")
-            values.append(data['country'])
-        if 'state' in data:
-            fields.append("state = %s")
-            values.append(data['state'])
-        if 'city' in data:
-            fields.append("city = %s")
-            values.append(data['city'])
-        
+        for field in updatable_fields:
+            if field in data:
+                fields.append(f"{field} = %s")
+                values.append(data[field])
 
-        # Ensure we have fields to update
         if not fields:
             raise ValueError("No fields provided to update.")
-        
-        fields.append("updated_at = NOW()")
 
-        # Append WHERE clause
-        query += ", ".join(fields) + " WHERE id = %s"
+        fields.append("updated_at = NOW()")
+        query = f"UPDATE users SET {', '.join(fields)} WHERE id = %s"
         values.append(userId)
 
-        # Execute the query
         cursor.execute(query, tuple(values))
 
     @staticmethod
@@ -124,6 +102,7 @@ class User:
         if row:
             column_names = [desc[0] for desc in cursor.description]
             user = dict(zip(column_names, row))
+            user.pop('password', None)
             return user
         return None
     

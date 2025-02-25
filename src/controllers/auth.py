@@ -131,6 +131,26 @@ def preload_data(cursor, email):
             brokercredentials = BrokerCredentials.get_broker_credentials_by_user(cursor, user.id)
             if brokercredentials:
                 formatted_brokercredentials = format_query_result(brokercredentials, BROKER_COLUMN)
+                if formatted_brokercredentials and formatted_brokercredentials[0]:
+                    data = formatted_brokercredentials[0]
+                    brokerType = data.get('brokerServer')
+                    if brokerType == 'Upstox':
+                        token = Token.get_token_by_user(cursor, user.id)
+                        if token:
+                            formatted_token = format_single_query_result(token, TOKEN_COLUMN)
+                        return jsonify({"user_data": user_data, "broker_type": brokerType, "setting": formatted_setting, "brokercredentials": formatted_brokercredentials, "tokens": formatted_token}), 200
+                    def check_error(response):
+                        if response.get('isError'):
+                            return jsonify(response), 400
+                        return None
+
+                    token_response = get_token(cursor, data, user.id)
+                    if (error := check_error(token_response)):
+                        return error
+                    
+                    client_code = token_response.get('user_session').get('result', {}).get('clientCodes')
+                    if client_code and client_code[0]:
+                        data['client_code'] = client_code[0]
                 
             token = Token.get_token_by_user(cursor, user.id)
             if token:

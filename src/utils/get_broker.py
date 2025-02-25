@@ -13,6 +13,7 @@ def check_error(response):
 def check_error_multitrade(response):
     if response.get('status') == 'unsuccessful' or response.get('isError'):
         message = (response.get('data', {}).get('error') or 
+                  response.get('data', {}).get('error_text') or 
                   response.get('error') or 
                   "An error occurred")
         return {"isError": True, 'error': response, 'message': message}

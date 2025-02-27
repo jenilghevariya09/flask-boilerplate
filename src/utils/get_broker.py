@@ -13,6 +13,7 @@ def check_error(response):
 def check_error_multitrade(response):
     if response.get('status') == 'unsuccessful' or response.get('isError'):
         message = (response.get('data', {}).get('error') or 
+                  response.get('data', {}).get('error_text') or 
                   response.get('error') or 
                   "An error occurred")
         return {"isError": True, 'error': response, 'message': message}
@@ -64,6 +65,14 @@ BROKER_HANDLERS = {
     "XTS-Jainam": {
         'marketUrl': 'http://ctrade.jainam.in:3001/apimarketdata',
         'interactiveUrl': 'http://ctrade.jainam.in:4001/hostlookup',
+        "market": call_user_market_api,
+        "interactive": call_user_session_api,
+        "is_host_lookup": True,
+        "check_error": check_error
+    },
+    "XTS-JMFinance": {
+        'marketUrl': 'https://smartapi.jmfonline.in/apimarketdata',
+        'interactiveUrl': 'https://smartapi.jmfonline.in/interactive',
         "market": call_user_market_api,
         "interactive": call_user_session_api,
         "is_host_lookup": True,

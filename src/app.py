@@ -6,7 +6,10 @@ from routes.profile_routes import profile_routes
 from routes.broker_credentials_routes import broker_credentials_routes
 from routes.settings_routes import settings_routes
 from routes.token_routes import token_routes
+from routes.payment_history_routes import payment_history_routes
 from routes.payment_routes import payment_routes
+from routes.plan_routes import plan_routes
+from routes.coupon_routes import coupon_routes
 from models.user_model import init_app
 from flask_jwt_extended.exceptions import NoAuthorizationError
 import logging
@@ -39,7 +42,10 @@ app.register_blueprint(profile_routes, url_prefix='/tradepi/user')
 app.register_blueprint(broker_credentials_routes, url_prefix='/tradepi/brokercredentials')
 app.register_blueprint(settings_routes, url_prefix='/tradepi/settings')
 app.register_blueprint(token_routes, url_prefix='/tradepi/broker_token')
+app.register_blueprint(plan_routes, url_prefix='/tradepi/plan')
+app.register_blueprint(payment_history_routes, url_prefix='/tradepi/payment_history')
 app.register_blueprint(payment_routes, url_prefix='/tradepi/payment')
+app.register_blueprint(coupon_routes, url_prefix='/tradepi/coupons')
 
 @app.errorhandler(NoAuthorizationError)
 def handle_no_authorization_error(error):
@@ -85,4 +91,4 @@ def welcome():
     return jsonify({"message": "Welcome to TradePi"})
 
 if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0', port=3030)
+    app.run(debug=False, host='0.0.0.0', port=5000)

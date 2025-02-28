@@ -1,5 +1,6 @@
 from flask_mysqldb import MySQL
 from datetime import datetime
+from utils.commonUtils import get_single_description_data
 
 mysql = MySQL()
 
@@ -9,108 +10,36 @@ def init_app(app):
 class Settings:
     @staticmethod
     def create_setting(cursor, data):
-        query = """
-            INSERT INTO settings (
-                theme_mode, symbol, open_order_type, limit_price, 
-                predefined_sl, sl_type, is_trailing, predefined_target, 
-                target_type, predefined_mtm_sl, mtm_sl_type, 
-                predefined_mtm_target, mtm_target_type, lot_multiplier, is_hedge, userId, deleted
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        filtered_data = {k: v for k, v in data.items()}
+        columns = ', '.join(filtered_data.keys())
+        placeholders = ', '.join([f'%({key})s' for key in filtered_data.keys()])
+
+        query = f"""
+            INSERT INTO settings ({columns})
+            VALUES ({placeholders})
         """
-
-        # Handle missing data by replacing missing keys with default or None
-        values = (
-            data.get('theme_mode', 'light'),
-            data.get('symbol', 'NIFTY'),
-            data.get('open_order_type', 'Market'),
-            data.get('limit_price', 0),
-            data.get('predefined_sl', None),
-            data.get('sl_type', 'Points'),
-            int(data.get('is_trailing', 0)),
-            data.get('predefined_target', None),
-            data.get('target_type', 'Points'),
-            data.get('predefined_mtm_sl', None),
-            data.get('mtm_sl_type', 'Points'),
-            data.get('predefined_mtm_target', None),
-            data.get('mtm_target_type', 'Points'),
-            int(data.get('lot_multiplier', 1)),
-            int(data.get('is_hedge', 1)),
-            data.get('userId'),
-            int(data.get('deleted', None)),
-        )
-
-        cursor.execute(query, values)
+        cursor.execute(query, filtered_data)
 
     @staticmethod
     def get_setting_by_userId(cursor, userId):
         query = "SELECT * FROM settings WHERE userId = %s AND deleted IS NULL"
         cursor.execute(query, (userId,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        data = get_single_description_data(cursor, row)
+        return data
 
     @staticmethod
     def update_setting(cursor, userId, data):
-        query = "UPDATE settings SET "
-        fields = []
-        values = []
+        filtered_data = {k: v for k, v in data.items()}
+        set_clause = ', '.join([f"{key} = %({key})s" for key in filtered_data.keys()])
 
-        if 'theme_mode' in data:
-            fields.append("theme_mode = %s")
-            values.append(data['theme_mode'])
-        if 'symbol' in data:
-            fields.append("symbol = %s")
-            values.append(data['symbol'])
-        if 'open_order_type' in data:
-            fields.append("open_order_type = %s")
-            values.append(data['open_order_type'])
-        if 'limit_price' in data:
-            fields.append("limit_price = %s")
-            values.append(data['limit_price'])
-        if 'predefined_sl' in data:
-            fields.append("predefined_sl = %s")
-            values.append(data['predefined_sl'])
-        if 'sl_type' in data:
-            fields.append("sl_type = %s")
-            values.append(data['sl_type'])
-        if 'is_trailing' in data:
-            fields.append("is_trailing = %s")
-            values.append(data['is_trailing'])
-        if 'predefined_target' in data:
-            fields.append("predefined_target = %s")
-            values.append(data['predefined_target'])
-        if 'target_type' in data:
-            fields.append("target_type = %s")
-            values.append(data['target_type'])
-        if 'predefined_mtm_sl' in data:
-            fields.append("predefined_mtm_sl = %s")
-            values.append(data['predefined_mtm_sl'])
-        if 'mtm_sl_type' in data:
-            fields.append("mtm_sl_type = %s")
-            values.append(data['mtm_sl_type'])
-        if 'predefined_mtm_target' in data:
-            fields.append("predefined_mtm_target = %s")
-            values.append(data['predefined_mtm_target'])
-        if 'mtm_target_type' in data:
-            fields.append("mtm_target_type = %s")
-            values.append(data['mtm_target_type'])
-        if 'lot_multiplier' in data:
-            fields.append("lot_multiplier = %s")
-            values.append(data['lot_multiplier'])
-        if 'is_hedge' in data:
-            fields.append("is_hedge = %s")
-            values.append(data['is_hedge'])
-
-        # Ensure we have fields to update
-        if not fields:
-            raise ValueError("No fields provided to update.")
-        fields.append("deleted = %s")
-        values.append(None)
-
-        # Append WHERE clause
-        query += ", ".join(fields) + " WHERE userId = %s"
-        values.append(userId)
-
-        # Execute the query
-        cursor.execute(query, tuple(values))
+        query = f"""
+            UPDATE payment_history
+            SET {set_clause}, updated_at = CURRENT_TIMESTAMP
+            WHERE id = %(userId)s
+        """
+        filtered_data['userId'] = userId
+        cursor.execute(query, filtered_data)
 
     def reset_setting(cursor, userId):
     # Default values for the fields

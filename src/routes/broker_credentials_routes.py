@@ -18,15 +18,15 @@ def upsert_broker():
 
         email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        user = User.find_by_email(cursor, email)
-        data['userId'] = user.id
+        user = User.get_user_by_email(cursor, email)
+        data['userId'] = user.get('id')
         
         def check_error(response):
             if response.get('isError'):
                 return jsonify(response), 400
             return None
 
-        token_response = get_token(cursor, data, user.id)
+        token_response = get_token(cursor, data, user.get('id'))
         if (error := check_error(token_response)):
             return error
 
@@ -104,8 +104,8 @@ def get_broker_by_user():
     try:
         email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        user = User.find_by_email(cursor, email)
-        response = get_broker_credentials_by_user(cursor, user.id)
+        user = User.get_user_by_email(cursor, email)
+        response = get_broker_credentials_by_user(cursor, user.get('id'))
         cursor.close()
         return response
     except Exception as e:

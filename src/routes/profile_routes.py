@@ -26,10 +26,10 @@ def update_profile():
         email = get_jwt_identity()
         cursor = mysql.connection.cursor()
         data = request.get_json()
-        user = User.find_by_email(cursor, email)
+        user = User.get_user_by_email(cursor, email)
         
         if user:
-            response = update_user_profile(cursor, user.id, data)
+            response = update_user_profile(cursor, user.get('id'), data)
             mysql.connection.commit()
             cursor.close()
             return response

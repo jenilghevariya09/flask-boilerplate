@@ -18,3 +18,17 @@ def format_single_query_result(row, column_names):
     if row is not None:
         return dict(zip(column_names, row))
     return None
+
+def get_single_description_data(cursor, data):
+    if data:
+        column_names = [desc[0] for desc in cursor.description]
+        description_data = dict(zip(column_names, data))
+        return description_data
+    return None
+    
+def get_description_data_list(cursor, data):
+    if data:
+        column_names = [desc[0] for desc in cursor.description]
+        data_list = [dict(zip(column_names, row)) for row in data]
+        return data_list
+    return []

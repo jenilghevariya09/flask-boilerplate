@@ -1,5 +1,6 @@
 from flask_mysqldb import MySQL
 from datetime import datetime
+from utils.commonUtils import get_single_description_data, get_description_data_list
 
 mysql = MySQL()
 
@@ -54,7 +55,9 @@ class BrokerCredentials:
     def get_broker_credentials(cursor, broker_id):
         query = "SELECT * FROM brokercredentials WHERE id = %s AND deleted IS NULL"
         cursor.execute(query, (broker_id,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        data = get_single_description_data(cursor, row)
+        return data
 
     @staticmethod
     def update_broker_credentials(cursor, broker_id, data):
@@ -103,4 +106,6 @@ class BrokerCredentials:
     def get_broker_credentials_by_user(cursor, userId):
         query = "SELECT * FROM brokercredentials WHERE userId = %s AND deleted IS NULL"
         cursor.execute(query, (userId,))
-        return cursor.fetchall()
+        rows = cursor.fetchall()
+        data = get_description_data_list(cursor, rows)
+        return data

@@ -1,4 +1,5 @@
 from flask_mysqldb import MySQL
+from utils.commonUtils import get_single_description_data
 
 mysql = MySQL()
 
@@ -10,7 +11,9 @@ class Token:
     def get_token_by_user(cursor, userId):
         query = "SELECT * FROM tokens WHERE userId = %s"
         cursor.execute(query, (userId,))
-        return cursor.fetchone()
+        row = cursor.fetchone()
+        data = get_single_description_data(cursor, row)
+        return data
     
     @staticmethod
     def upsert_token(cursor, userId, interactive_token=None, market_token=None, interactive_url=None):

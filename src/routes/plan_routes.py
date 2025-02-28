@@ -1,73 +1,79 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from controllers.settings import create_setting, get_setting_by_userId, update_setting, reset_setting, upsert_setting
-from models.settings_model import mysql
-from models.user_model import mysql, User
-settings_routes = Blueprint('settings_routes', __name__)
+from flask_jwt_extended import jwt_required
+from controllers.plan import create_plan, get_plan_by_id, update_plan, activate_deactivate_plan, delete_plan, get_plans
+from models.plans_model import mysql
 
-@settings_routes.route('/create', methods=['POST'])
+plan_routes = Blueprint('plan_routes', __name__)
+
+@plan_routes.route('/create', methods=['POST'])
 @jwt_required()
 def create():
     try:
         cursor = mysql.connection.cursor()
         data = request.json
-        response = create_setting(cursor, data)
+        response = create_plan(cursor, data)
         mysql.connection.commit()
         cursor.close()
         return response
     except Exception as e:
+        print('e',e)
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
-@settings_routes.route('/getSetting', methods=['GET'])
+@plan_routes.route('/get/<int:plan_id>', methods=['GET'])
 @jwt_required()
-def get():
+def get(plan_id):
     try:
-        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        user = User.get_user_by_email(cursor, email)
-        response = get_setting_by_userId(cursor, user.get('id'))
+        response = get_plan_by_id(cursor, plan_id)
+        cursor.close()
+        return response
+    except Exception as e:
+        return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
+    
+@plan_routes.route('/allPlans', methods=['GET'])
+@jwt_required()
+def get_all():
+    try:
+        cursor = mysql.connection.cursor()
+        response = get_plans(cursor)
         cursor.close()
         return response
     except Exception as e:
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
-@settings_routes.route('/update/<int:userId>', methods=['POST'])
+@plan_routes.route('/update/<int:plan_id>', methods=['POST'])
 @jwt_required()
-def update(userId):
+def update(plan_id):
     try:
         cursor = mysql.connection.cursor()
         data = request.json
-        response = update_setting(cursor, userId, data)
+        response = update_plan(cursor, plan_id, data)
         mysql.connection.commit()
         cursor.close()
         return response
     except Exception as e:
         return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
 
-@settings_routes.route('/reset', methods=['POST'])
+@plan_routes.route('/setStatus/<int:plan_id>', methods=['POST'])
 @jwt_required()
-def reset():
+def set_status(plan_id):
     try:
-        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        user = User.get_user_by_email(cursor, email)
-        response = reset_setting(cursor, user.get('id'))
-        mysql.connection.commit()
-        cursor.close()
-        return response
-    except Exception as e:
-        return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
-
-@settings_routes.route('/upsert', methods=['POST'])
-@jwt_required()
-def upsert():
-    try:
-        email = get_jwt_identity()
-        cursor = mysql.connection.cursor()
-        user = User.get_user_by_email(cursor, email)
         data = request.json
-        data['userId'] = user.get('id')
-        response = upsert_setting(cursor, data)
+        is_active = data.get("isActive")
+        response = activate_deactivate_plan(cursor, plan_id, is_active)
+        mysql.connection.commit()
+        cursor.close()
+        return response
+    except Exception as e:
+        return jsonify({"message": "An unexpected error occurred", "error": str(e)}), 500
+    
+@plan_routes.route('/delete/<int:plan_id>', methods=['DELETE'])
+@jwt_required()
+def delete(plan_id):
+    try:
+        cursor = mysql.connection.cursor()
+        response = delete_plan(cursor, plan_id)
         mysql.connection.commit()
         cursor.close()
         return response

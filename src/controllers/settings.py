@@ -4,7 +4,6 @@ from models.settings_model import Settings
 from sqlalchemy.exc import SQLAlchemyError
 from utils.commonUtils import format_query_result, format_single_query_result
 from utils.httpUtils import HTTP
-from constant.constant import SETTING_COLUMN
 
 http = HTTP()
 
@@ -19,8 +18,7 @@ def get_setting_by_userId(cursor, userId):
     try:
         setting = Settings.get_setting_by_userId(cursor, userId)
         if setting:
-            formatted_setting = format_single_query_result(setting, SETTING_COLUMN)
-            return jsonify(formatted_setting), 200
+            return jsonify(setting), 200
         return jsonify({"message": "Setting not found"}), 404
     except Exception as e:
         return jsonify({"message": "An error occurred while retrieving the setting", "error": str(e)}), 500
@@ -44,8 +42,7 @@ def upsert_setting(cursor, data):
         Settings.upsert_setting(cursor, data)
         setting = Settings.get_setting_by_userId(cursor, data['userId'])
         if setting:
-            formatted_setting = format_single_query_result(setting, SETTING_COLUMN)
-            return jsonify(formatted_setting), 200
+            return jsonify(setting), 200
         return jsonify({"message": "Operation completed successfully"}), 200
     except Exception as e:
         return jsonify({"message": "An error occurred while creating the setting", "error": str(e)}), 500

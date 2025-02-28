@@ -10,14 +10,12 @@ from models.user_model import init_app
 from flask_jwt_extended.exceptions import NoAuthorizationError
 import logging
 import os
-# Request
 from utils.httpUtils import HTTP
 from dotenv import load_dotenv
 
 load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
-
 # Configurations
 app.config.from_object('config.Config')
 
@@ -28,8 +26,6 @@ init_app(app)
 
 # Initialize JWT
 jwt = JWTManager(app)
-
-
 http = HTTP()
 
 # Register routes
@@ -81,6 +77,6 @@ def handle_exception(error):
 @app.route('/tradepi')
 def welcome():
     return jsonify({"message": "Welcome to TradePi"})
-
+        
 if __name__ == '__main__':
     app.run(debug=False, host='0.0.0.0', port=5000)

@@ -41,6 +41,14 @@ class Plan:
         return data
     
     @staticmethod
+    def get_all_plan_list(cursor):
+        query = "SELECT * FROM plans"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        data = get_description_data_list(cursor, rows)
+        return data
+    
+    @staticmethod
     def update_plan(cursor, plan_id, data):
         # Convert featureLists to JSON string if it's a list
         if 'featureLists' in data and isinstance(data['featureLists'], list):

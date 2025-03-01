@@ -16,6 +16,15 @@ class PaymentHistory:
             VALUES ({placeholders})
         """
         cursor.execute(query, filtered_data)
+        last_id = cursor.lastrowid  # Get the last inserted ID
+
+        if last_id:
+            cursor.execute("SELECT * FROM payment_history WHERE id = %s", (last_id,))
+            row = cursor.fetchone()
+            data = get_single_description_data(cursor, row)
+            return data
+
+        return None
 
     @staticmethod
     def get_all_payment_history(cursor):
@@ -34,8 +43,16 @@ class PaymentHistory:
         return data
     
     @staticmethod
+    def get_payment_history_by_paymentId(cursor, paymentId):
+        query = "SELECT * FROM payment_history WHERE paymentId = %s"
+        cursor.execute(query, (paymentId,))
+        row = cursor.fetchone()
+        data = get_single_description_data(cursor, row)
+        return data
+    
+    @staticmethod
     def get_payment_history_by_user(cursor, userId):
-        query = "SELECT * FROM payment_history WHERE userId = %s"
+        query = "SELECT * FROM payment_history WHERE userId = %s ORDER BY created_at DESC"
         cursor.execute(query, (userId,))
         rows = cursor.fetchall()
         data = get_description_data_list(cursor, rows)

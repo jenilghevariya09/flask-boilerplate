@@ -1,9 +1,8 @@
 from flask import Blueprint, request, jsonify
 from utils.payment_service import check_payment
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from models.token import mysql
-from models.user_model import mysql, User
-from models.payment_history_model import PaymentHistory
+from models.user_model import User
+from models.payment_history_model import mysql,PaymentHistory
 from models.coupon_model import Coupon
 import razorpay
 import hmac
@@ -91,9 +90,9 @@ def payment_checkout():
                 notes['couponValue'] = checkoutData.get('couponValue')
                 
             notes['paymentStatus'] = 'captured'
-            PaymentHistory.create_payment_history(cursor, notes)
+            payment = PaymentHistory.create_payment_history(cursor, notes)
             
-            if user_data.get('status') == 'active':
+            if user_data.get('status') == 'active' and user_data.get('activateDate'):
                 activateDate = user_data.get('activateDate')
             else:
                 activateDate = checkoutData.get('activationDate')
@@ -182,3 +181,16 @@ def webhook():
     else:
         return jsonify({"message": "Invalid signature"}), 400
 
+@payment_routes.route('/verify/<paymentId>', methods=['GET'])
+@jwt_required()
+def verify(paymentId):
+    try:
+        cursor = mysql.connection.cursor()
+        response = PaymentHistory.get_payment_history_by_paymentId(cursor, paymentId)
+        cursor.close()
+        if response:
+            return jsonify(response), 200
+        else:
+            return jsonify({"message": "Payment not found"}), 404
+    except Exception as e:
+        return jsonify({"message": "Unexpected error occurred.", "error": str(e)}), 500

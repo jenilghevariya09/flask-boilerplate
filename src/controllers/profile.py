@@ -1,5 +1,6 @@
 from flask import jsonify
 from models.user_model import User
+from models.plans_model import Plan
 from sqlalchemy.exc import SQLAlchemyError
 from utils.commonUtils import format_query_result, format_single_query_result
 
@@ -7,7 +8,10 @@ def get_user_profile(cursor, email):
     try:
         user = User.get_user_by_email(cursor, email)
         if user:
-            return jsonify({"data": user}), 200
+            plan = None
+            if user.get('planId'):
+                plan = Plan.get_plan_by_id(cursor, user.get('planId'))
+            return jsonify({"data": user, "planDetails": plan}), 200
         return jsonify({"message": "User not found"}), 404
     except SQLAlchemyError as e:
         return jsonify({"message": "Database error occurred", "error": str(e)}), 500

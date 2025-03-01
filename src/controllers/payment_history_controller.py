@@ -1,5 +1,6 @@
 from flask import jsonify
 from models.payment_history_model import PaymentHistory
+from models.plans_model import Plan
 
 def create_payment_history(cursor, data):
     try:
@@ -30,6 +31,15 @@ def get_payment_history_by_user(cursor, userId):
     try:
         result = PaymentHistory.get_payment_history_by_user(cursor, userId)
         if result:
+            plan_list = Plan.get_all_plan_list(cursor)
+            if plan_list:
+                plan_dict = {plan['id']: plan for plan in plan_list}  # Create a dictionary for quick lookup
+                for item in result:
+                    if 'planId' in item:
+                        plan_id = item['planId']
+                        if plan_id in plan_dict:
+                            item['planDetails'] = plan_dict[plan_id]  # Append plan details to the item
+    
             return jsonify(result), 200
         return jsonify({"message": "Payment history not found."}), 404
     except Exception as e:

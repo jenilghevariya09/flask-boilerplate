@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from controllers.plan import create_plan, get_plan_by_id, update_plan, activate_deactivate_plan, delete_plan, get_plans
 from models.plans_model import mysql
+from models.user_model import User
 
 plan_routes = Blueprint('plan_routes', __name__)
 
@@ -34,8 +35,10 @@ def get(plan_id):
 @jwt_required()
 def get_all():
     try:
+        email = get_jwt_identity()
         cursor = mysql.connection.cursor()
-        response = get_plans(cursor)
+        user_data = User.get_user_by_email(cursor, email)
+        response = get_plans(cursor, user_data)
         cursor.close()
         return response
     except Exception as e:

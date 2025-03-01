@@ -21,7 +21,7 @@ def check_payment(cursor, data, user):
         activation_date = datetime.now()
         expiry_date = (activation_date + timedelta(days=subscription_days)).replace(hour=2, minute=0, second=0)
         
-        if user.get('status') == 'active':
+        if user.get('status') == 'active' and user.get('expiryDate'):
             activation_date = user.get('expiryDate')
             current_expiry_date = user.get('expiryDate')
             additional_days = subscription_days

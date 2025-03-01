@@ -87,7 +87,7 @@ def preload_data(cursor, email):
         if user:
             planStatus = user.get('status')
             if planStatus == 'active':
-                if user.get('expiryDate') < datetime.now():
+                if user.get('expiryDate') and user.get('expiryDate') < datetime.now():
                     updated_user = {
                         "planId": None,
                         "status": "expired",

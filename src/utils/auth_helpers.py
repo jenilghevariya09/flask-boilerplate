@@ -11,7 +11,7 @@ def decode_auth_token(auth_token):
 
 def create_jwt_token(identity):
     now = datetime.now(timezone.utc)
-    tomorrow_2am = now.replace(hour=2, minute=0, second=0, microsecond=0)
+    tomorrow_2am = now.replace(hour=2, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
     # If the current time is after 2 AM, set the expiration to 2 AM the next day
     if now > tomorrow_2am:
         tomorrow_2am += datetime.timedelta(days=1)

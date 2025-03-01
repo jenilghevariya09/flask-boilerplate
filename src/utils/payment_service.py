@@ -19,7 +19,7 @@ def check_payment(cursor, data, user):
 
         # Base payment data
         activation_date = datetime.now(timezone.utc)
-        expiry_date = (activation_date + timedelta(days=subscription_days)).replace(hour=2, minute=0, second=0)
+        expiry_date = (activation_date + timedelta(days=subscription_days)).replace(hour=2, minute=0, second=0, tzinfo=timezone.utc)
         
         if user.get('status') == 'active' and user.get('expiryDate'):
             activation_date = user.get('expiryDate')
@@ -79,7 +79,7 @@ def check_payment(cursor, data, user):
             elif coupon.get('offerType') == 'Month':
                 # Offer in days
                 extra_days = (int(coupon.get('value')) * 30)
-                payment_data['expiryDate'] = (expiry_date + timedelta(days=extra_days + 1)).replace(hour=2, minute=0, second=0)
+                payment_data['expiryDate'] = (expiry_date + timedelta(days=extra_days + 1)).replace(hour=2, minute=0, second=0, tzinfo=timezone.utc)
                 after_discount = price
                 discount = Decimal('0')
 

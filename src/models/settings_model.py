@@ -1,5 +1,5 @@
 from flask_mysqldb import MySQL
-from datetime import datetime
+from datetime import datetime, timezone
 from utils.commonUtils import get_single_description_data
 
 mysql = MySQL()
@@ -61,7 +61,7 @@ class Settings:
             'is_hedge': 1,
         }
         
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
     
         # Construct the UPDATE query to set each column to its default value
         set_clause = ', '.join(f"{key} = %s" for key in default_values)

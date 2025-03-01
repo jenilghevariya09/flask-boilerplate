@@ -1,6 +1,5 @@
 from flask_jwt_extended import decode_token, get_jwt_identity, JWTManager, create_access_token
-from flask import current_app, jsonify
-import datetime
+from datetime import datetime, timezone
 
 def decode_auth_token(auth_token):
     try:
@@ -11,7 +10,7 @@ def decode_auth_token(auth_token):
         return None
 
 def create_jwt_token(identity):
-    now = datetime.datetime.now()
+    now = datetime.now(timezone.utc)
     tomorrow_2am = now.replace(hour=2, minute=0, second=0, microsecond=0)
     # If the current time is after 2 AM, set the expiration to 2 AM the next day
     if now > tomorrow_2am:

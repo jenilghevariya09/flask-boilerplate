@@ -1,5 +1,5 @@
 from flask import jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 from models.user_model import User
 from models.settings_model import Settings
 from models.broker_credentials_model import BrokerCredentials
@@ -20,7 +20,7 @@ def register_user(cursor, data):
         hashed_password = bcrypt.generate_password_hash(data['password']).decode('utf-8')
         data['password'] = hashed_password
         data['status'] = 'trial'
-        data['trialDate'] = datetime.now()
+        data['trialDate'] = datetime.now(timezone.utc)
         User.register_user(cursor, data)
         user = User.get_user_by_email(cursor, data['email'])
         if user:
@@ -87,7 +87,7 @@ def preload_data(cursor, email):
         if user:
             planStatus = user.get('status')
             if planStatus == 'active':
-                if user.get('expiryDate') and user.get('expiryDate') < datetime.now():
+                if user.get('expiryDate') and user.get('expiryDate') < datetime.now(timezone.utc):
                     updated_user = {
                         "planId": None,
                         "status": "expired",

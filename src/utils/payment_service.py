@@ -1,7 +1,7 @@
 from models.plans_model import Plan
 from models.coupon_model import Coupon
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 def check_payment(cursor, data, user):
@@ -18,7 +18,7 @@ def check_payment(cursor, data, user):
         subscription_days = {'monthly': 31, 'annual': 366, 'twoYear': 731}.get(plan.get('subscriptionPeriod'), 0)
 
         # Base payment data
-        activation_date = datetime.now()
+        activation_date = datetime.now(timezone.utc)
         expiry_date = (activation_date + timedelta(days=subscription_days)).replace(hour=2, minute=0, second=0)
         
         if user.get('status') == 'active' and user.get('expiryDate'):

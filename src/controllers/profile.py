@@ -2,7 +2,7 @@ from flask import jsonify
 from models.user_model import User
 from models.plans_model import Plan
 from sqlalchemy.exc import SQLAlchemyError
-from utils.commonUtils import format_query_result, format_single_query_result
+from datetime import datetime
 
 def get_user_profile(cursor, email):
     try:
@@ -11,6 +11,10 @@ def get_user_profile(cursor, email):
             plan = None
             if user.get('planId'):
                 plan = Plan.get_plan_by_id(cursor, user.get('planId'))
+                if user.get('status') == 'active' and user.get('expiryDate'):
+                    expiry_date = user['expiryDate']
+                    days_remaining = (expiry_date - datetime.now()).days
+                    plan['days_remaining'] = days_remaining
             return jsonify({"data": user, "planDetails": plan}), 200
         return jsonify({"message": "User not found"}), 404
     except SQLAlchemyError as e:

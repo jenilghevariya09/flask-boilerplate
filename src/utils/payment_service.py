@@ -24,7 +24,7 @@ def check_payment(cursor, data, user):
         if user.get('status') == 'active' and user.get('expiryDate'):
             activation_date = user.get('expiryDate')
             current_expiry_date = user.get('expiryDate')
-            additional_days = subscription_days
+            additional_days = subscription_days - 1
             expiry_date = current_expiry_date + timedelta(days=additional_days)
             
         price = Decimal(str(plan.get('price')))  # Convert price to Decimal

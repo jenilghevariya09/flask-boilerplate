@@ -15,7 +15,7 @@ def check_payment(cursor, data, user):
             return {"isError": True, 'error': "Plan is not active", 'message': "Plan is not active"}
 
         # Determine subscription days
-        subscription_days = {'monthly': 30, 'annual': 365, 'twoYear': 730}.get(plan.get('subscriptionPeriod'), 0)
+        subscription_days = {'monthly': 31, 'annual': 366, 'twoYear': 731}.get(plan.get('subscriptionPeriod'), 0)
 
         # Base payment data
         activation_date = datetime.now(timezone.utc)

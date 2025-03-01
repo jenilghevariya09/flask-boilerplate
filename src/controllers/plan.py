@@ -3,7 +3,7 @@ from models.plans_model import Plan
 from datetime import datetime, timedelta
 
 def can_purchase_plan(user_data, plan):
-    subscription_days_map = {'monthly': 31, 'annual': 366, 'twoYear': 731}
+    subscription_days_map = {'monthly': 30, 'annual': 365, 'twoYear': 730}
     subscription_days = subscription_days_map.get(plan.get('subscriptionPeriod'), 0)
     
     expiry_date = user_data.get('expiryDate')

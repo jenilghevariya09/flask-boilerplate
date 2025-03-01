@@ -39,6 +39,18 @@ def login_user(cursor, email, password):
         if user_detail and bcrypt.check_password_hash(user_detail.get('password'), password):
             access_token = create_jwt_token(identity=email)
             user = User.get_user_by_email(cursor, email)
+            planStatus = user.get('status')
+            if planStatus == 'active' and user.get('expiryDate'):
+                expiry_date = user['expiryDate']
+                if expiry_date.tzinfo is None:
+                    expiry_date = expiry_date.replace(tzinfo=timezone.utc)
+                if expiry_date < datetime.now(timezone.utc):
+                    updated_user = {
+                        "planId": None,
+                        "status": "expired",
+                    }
+                    User.update_profile(cursor, user.get('id'), updated_user)
+                    user = User.get_user_by_id(cursor, user.get('id'))
             brokerType = None
             Settings.upsert_setting(cursor, {"userId": user.get('id'), "predefined_mtm_sl" : None, "predefined_mtm_target" : None})
             setting = Settings.get_setting_by_userId(cursor, user.get('id'))
@@ -86,8 +98,11 @@ def preload_data(cursor, email):
         user = User.get_user_by_email(cursor, email)
         if user:
             planStatus = user.get('status')
-            if planStatus == 'active':
-                if user.get('expiryDate') and user.get('expiryDate') < datetime.now(timezone.utc):
+            if planStatus == 'active' and user.get('expiryDate'):
+                expiry_date = user['expiryDate']
+                if expiry_date.tzinfo is None:
+                    expiry_date = expiry_date.replace(tzinfo=timezone.utc)
+                if expiry_date < datetime.now(timezone.utc):
                     updated_user = {
                         "planId": None,
                         "status": "expired",

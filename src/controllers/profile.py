@@ -13,6 +13,8 @@ def get_user_profile(cursor, email):
                 plan = Plan.get_plan_by_id(cursor, user.get('planId'))
                 if user.get('status') == 'active' and user.get('expiryDate'):
                     expiry_date = user['expiryDate']
+                    if expiry_date.tzinfo is None:
+                        expiry_date = expiry_date.replace(tzinfo=timezone.utc)
                     days_remaining = (expiry_date - datetime.now(timezone.utc)).days
                     plan['days_remaining'] = days_remaining
             return jsonify({"data": user, "planDetails": plan}), 200

@@ -58,8 +58,8 @@ def payment_checkout():
         
         notes = {
                 "userId": user_data.get('id'),
-                "activationDate": checkoutData.get('activationDate').strftime('%Y-%m-%d %H:%M:%S'),
-                "expiryDate": checkoutData.get('expiryDate').strftime('%Y-%m-%d %H:%M:%S'),
+                "activationDate": checkoutData.get('activationDate').astimezone(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+                "expiryDate": checkoutData.get('expiryDate').astimezone(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
                 "planId": checkoutData.get('planId'),
                 "subTotalAmount": checkoutData.get('subTotalAmount'),
                 "taxAmount": checkoutData.get('taxAmount'),

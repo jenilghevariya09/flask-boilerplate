@@ -110,7 +110,8 @@ class Coupon:
 
         if user_id not in redeemed_by:
             redeemed_by.append(user_id)
-            redeem_count += 1
+        
+        redeem_count += 1
 
         query = """
             UPDATE coupon

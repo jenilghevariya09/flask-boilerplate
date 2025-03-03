@@ -1,4 +1,5 @@
 from flask_mysqldb import MySQL
+import MySQLdb.cursors
 from utils.commonUtils import get_single_description_data, get_description_data_list
 import json
 
@@ -95,6 +96,8 @@ class Coupon:
         
     @staticmethod
     def redeem_coupon(cursor, coupon_code, user_id):
+        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+        
         query = "SELECT redeemedBy, redeemCount FROM coupon WHERE code = %s"
         cursor.execute(query, (coupon_code,))
         row = cursor.fetchone()

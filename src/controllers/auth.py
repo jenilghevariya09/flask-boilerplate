@@ -180,7 +180,6 @@ def update_password(cursor, email, old_password=None, otp=None, new_password=Non
 
     if not user:
         return jsonify({'message': 'User not found'}), 404
-    print(user)
     # If old_password is provided, verify it
     if old_password:
         if not bcrypt.check_password_hash(user.password, old_password):
@@ -196,9 +195,10 @@ def update_password(cursor, email, old_password=None, otp=None, new_password=Non
 
     password_errors = validate_password(new_password)
     if password_errors:
-        return jsonify({"success": False, "errors": " ".join(password_errors)}), 400
+        return jsonify({"success": False, "message": " ".join(password_errors)}), 400
 
     hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
     new_password = hashed_password    # Update password (Use hashed password in production)
     cursor.execute("UPDATE users SET password = %s WHERE email = %s", (new_password, email))
+    cursor.execute("UPDATE users SET otp = NULL, otp_expiration = NULL WHERE email = %s", (email,))
     return jsonify({'message': 'Password changed successfully'}), 200

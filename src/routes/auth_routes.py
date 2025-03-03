@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from controllers.auth import register_user, login_user, logout_user, preload_data , update_password
 from models.user_model import mysql
 from utils.commonUtils import verify_otp , send_otp_email
+from models.user_model import User
 
 auth_routes = Blueprint('auth_routes', __name__)
 
@@ -52,11 +53,12 @@ def logout():
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
     
 @auth_routes.route('/change-password', methods=['POST'])
-@jwt_required()
 def change_password():
     try:
         data = request.get_json()
-        email = get_jwt_identity()
+        if not data.get('email'):
+            return jsonify({'message': 'email is required'}), 400
+        email = data.get('email')
         if not data.get('new_password'):
             return jsonify({'message': 'new_password is required'}), 400
 
@@ -87,31 +89,37 @@ def preload():
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 
-@auth_routes.route('/send-emailOtp', methods=['GET'])
-@jwt_required()
+@auth_routes.route('/send-emailOtp', methods=['POST'])
 def send_otp():
     try:
         data = request.get_json()
-        email = get_jwt_identity()
+        if not data.get('email'):
+            return jsonify({'message': 'email is required'}), 400
+        email = data.get('email')
         cursor = mysql.connection.cursor()
-        response = send_otp_email(cursor, email)
-        mysql.connection.commit()
-        cursor.close()
-        return response
+        user = User.find_by_email(cursor, email)
+        if user:
+            response = send_otp_email(cursor, email)
+            mysql.connection.commit()
+            cursor.close()
+            return response
+        return jsonify({"message": "User not found"}), 404
     except Exception as e:
         return jsonify({"message": "An error occurred", "error": str(e)}), 500
 
 @auth_routes.route('/verify-otp', methods=['POST'])
-@jwt_required()
 def verify():
     try:
         data = request.get_json()
-        email = get_jwt_identity()
+        email = data.get('email')
         otp = data.get('otp')
         verification_type = data.get('verification_type')
-        if not otp or not verification_type:
-            return jsonify({"message": "OTP and verification_type are required"}), 400
+        if not otp or not verification_type or not email:
+            return jsonify({"message": "OTP , email and verification_type are required"}), 400
         cursor = mysql.connection.cursor()
+        user = User.find_by_email(cursor, email)
+        if not user:
+            return jsonify({"message": "User not found"}), 404
         is_valid_otp = verify_otp(cursor, email, otp)
         print("is_valid_otp" , is_valid_otp)
         if not is_valid_otp:

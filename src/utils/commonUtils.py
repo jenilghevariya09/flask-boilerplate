@@ -51,7 +51,6 @@ def verify_otp(cursor, email, otp):
 
     if otp == stored_otp:
         # OTP is verified, now remove it from the database
-        cursor.execute("UPDATE users SET otp = NULL, otp_expiration = NULL WHERE email = %s", (email,))
         return True
 
     return False

@@ -50,19 +50,16 @@ def check_payment(cursor, data, user):
             couponError = "Invalid coupon code"
 
         if coupon:
-            if coupon and not coupon.get('isActive'):
+            if not coupon.get('isActive'):
                 couponError = "Coupon is not active"
-
-            if coupon and coupon.get('maxRedemption') <= coupon.get('redeemCount'):
+            elif coupon.get('maxRedemption') is not None and coupon.get('maxRedemption') <= (coupon.get('redeemCount') or 0):
                 couponError = "Coupon is not available"
-
-            if coupon and Decimal(str(coupon.get('minimumBillAmount') or '0')) > price:
+            elif coupon.get('minimumBillAmount') is not None and Decimal(str(coupon.get('minimumBillAmount'))) > price:
                 couponError = "Coupon is not applicable for this bill amount"
-            
-            if not str(plan_id) in json.loads(coupon.get('forPlans') or '[]'):
+            elif coupon.get('forPlans') is not None and str(plan_id) not in json.loads(coupon.get('forPlans') or '[]'):
                 couponError = "Coupon is not applicable for this plan"
 
-        if coupon and coupon.get('isActive') and coupon.get('maxRedemption') > coupon.get('redeemCount') and Decimal(str(coupon.get('minimumBillAmount') or '0')) <= price and str(plan_id) in json.loads(coupon.get('forPlans') or '[]'):
+        if coupon and couponError is None:
             payment_data.update({
                 'couponCode': coupon.get('code'),
                 'offerType': coupon.get('offerType')

@@ -92,3 +92,26 @@ class Coupon:
     def delete_coupon(cursor, coupon_id):
         """Delete a coupon by its ID."""
         cursor.execute("DELETE FROM coupon WHERE id = %s", (coupon_id,))
+        
+    @staticmethod
+    def redeem_coupon(cursor, coupon_code, user_id):
+        query = "SELECT redeemedBy, redeemCount FROM coupon WHERE code = %s"
+        cursor.execute(query, (coupon_code,))
+        row = cursor.fetchone()
+        
+        if not row:
+            raise ValueError("Coupon not found")
+
+        redeemed_by = json.loads(row['redeemedBy']) if row['redeemedBy'] else []
+        redeem_count = row['redeemCount'] if row['redeemCount'] else 0
+
+        if user_id not in redeemed_by:
+            redeemed_by.append(user_id)
+            redeem_count += 1
+
+        query = """
+            UPDATE coupon
+            SET redeemedBy = %s, redeemCount = %s, updated_at = CURRENT_TIMESTAMP
+            WHERE code = %s
+        """
+        cursor.execute(query, (json.dumps(redeemed_by), redeem_count, coupon_code))

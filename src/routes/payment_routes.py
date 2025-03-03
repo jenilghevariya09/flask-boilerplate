@@ -105,6 +105,9 @@ def payment_checkout():
             }
             
             User.update_profile(cursor, user_data.get('id'), updated_user)
+            
+            if checkoutData.get('couponCode'):
+                Coupon.redeem_coupon(cursor, checkoutData.get('couponCode'), user_data.get('id'))
         else:
             paymentData["notes"]["name"] = f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}"
             paymentData["notes"]["contact"] = f"+91{user_data.get('phone_number', '')}"
@@ -174,6 +177,9 @@ def webhook():
                 "status": "active",
             }
             User.update_profile(cursor, payment_note.get('userId'), updated_user)
+            
+            if payment_note.get('couponCode'):
+                Coupon.redeem_coupon(cursor, payment_note.get('couponCode'), payment_note.get('userId'))
         
         mysql.connection.commit()
         cursor.close()    
